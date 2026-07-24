@@ -1,0 +1,84 @@
+name: Policy change or correction
+description: Request a correction, evidence update, clarification or material revision to a public commitment.
+title: "[Policy request] "
+labels:
+  - policy-review
+body:
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request type
+      options:
+        - Correction
+        - Evidence update
+        - Public feedback
+        - Proposed clarification
+        - Material policy revision
+    validations:
+      required: true
+
+  - type: input
+    id: policy
+    attributes:
+      label: Policy or campaign rule
+      description: Name the policy file, campaign rule or public page.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_wording
+    attributes:
+      label: Current wording
+      description: Quote the wording that should be reviewed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: requested_change
+    attributes:
+      label: Requested change
+      description: Describe the correction, clarification or revision.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: Why this change should be considered
+      description: Explain the problem, public benefit or evidence.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Public evidence or source links
+      description: Provide public links. Do not include private campaign material or personal information.
+
+  - type: dropdown
+    id: effect
+    attributes:
+      label: Possible effect on the commitment
+      options:
+        - No material change
+        - Expands the commitment
+        - Reduces the commitment
+        - Changes the position
+        - Withdraws the commitment
+        - Unsure
+    validations:
+      required: true
+
+  - type: input
+    id: website_pages
+    attributes:
+      label: Public website pages affected
+      description: List any campaign pages that should be checked.
+
+  - type: checkboxes
+    id: public_only
+    attributes:
+      label: Public-information confirmation
+      options:
+        - label: I have not included private personal information, donor information, credentials, internal campaign strategy, opposition research or legal-case information.
+          required: true
