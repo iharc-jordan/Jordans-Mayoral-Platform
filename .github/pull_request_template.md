@@ -1,55 +1,52 @@
-## What changed?
+## Summary
 
-Describe the change in plain language.
+Describe the proposed repository change in plain language.
 
-## Why did it change?
+## Immutable change record
 
-Explain the reason, including new evidence or public feedback where relevant.
+Link the new authoritative `changes/*.md` record. Infrastructure-only pull requests may write `Not applicable: no political record changed`.
 
-## Change classification
+## Public records affected
 
-Select one:
+List every exact changed `CAMPAIGN-RULES.md` or `platform/*.md` path. Write `None` only for an infrastructure-only pull request.
 
-- [ ] Clarification
-- [ ] Evidence update
-- [ ] Cost or timeline update
-- [ ] Scope expansion
-- [ ] Scope reduction
-- [ ] Position change
-- [ ] Policy withdrawal
-- [ ] Administrative correction
+## Website pages and public artifacts affected
 
-## Previous wording
+List every exact public route and document that requires separate review. This repository does not publish website body copy automatically.
 
-Quote or link to the previous wording.
+## Classification and commitment effect
 
-## New wording
+- Classification:
+- Effect on the commitment:
 
-Quote the proposed new wording.
+## Immutable-record completeness
 
-## Supporting evidence
+- [ ] The record contains the exact previous wording, or `Not applicable: new commitment` for a genuine addition.
+- [ ] The record contains the exact new wording, or `Not applicable: commitment withdrawn` for a genuine withdrawal.
+- [ ] The record explains why the change is being made.
+- [ ] Every supporting-evidence link is public HTTPS and explains what it supports.
+- [ ] The record specifically states **What did not change**.
+- [ ] The record identifies every public implementation route or artifact requiring separate review.
 
-Provide public links and explain what they support.
+## Version and changelog
 
-## Effect on the commitment
+- [ ] The version follows the documented semantic-version rules.
+- [ ] `CHANGELOG.md` contains a concise entry linking the immutable record.
+- [ ] A release or commit reference will be added through the normal release workflow when available; this commit does not attempt to contain its own final SHA.
 
-- [ ] No material change
-- [ ] Expands the commitment
-- [ ] Reduces the commitment
-- [ ] Withdraws the commitment
-- [ ] Changes the position
+## Scope and public-information confirmation
 
-## Related planning issue
+- [ ] No unrelated commitment changed.
+- [ ] No campaign rule or platform record outside the paths listed above changed.
+- [ ] No private information, donor personal information, credentials, internal strategy, opposition research or legal-case information is included.
+- [ ] Website copy, if required, will change only through a separate reviewed website pull request.
 
-Link a related public issue when one exists. Do not link private campaign-planning material.
+## Validation commands and results
 
-## Website pages affected
+Paste each command that actually ran and its exact result.
 
-List every public campaign website page that should be updated or checked.
-
-## Verification
-
-- [ ] The source links are public and correct.
-- [ ] Previous wording remains available in Git history.
-- [ ] The changelog is updated when required.
-- [ ] No private information, donor information, credentials, internal strategy, opposition research or legal-case information is included.
+```text
+npm test
+npm run validate -- --base <base-sha> --head <head-sha>
+git diff --check
+```

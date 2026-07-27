@@ -1,0 +1,13 @@
+{
+  "name": "jordans-mayoral-platform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "validate": "node scripts/validate-change-records.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
