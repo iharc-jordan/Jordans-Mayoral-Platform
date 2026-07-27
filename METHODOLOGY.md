@@ -51,7 +51,7 @@ Private repositories and internal records may be used during the audit to locate
 
 ## Corrections
 
-A correction to the baseline or a later version must be made through a visible pull request. The request should identify the error, show the previous and corrected wording, cite the public evidence and classify the change.
+A correction to the baseline or a later version must be made through a visible pull request with one new immutable `changes/*.md` record. The Git diff proves the textual correction. The record preserves the previous and corrected wording, public evidence, classification, rationale, effect and the related commitments that did not change.
 
 A correction that fixes transcription, metadata, formatting or a broken link without changing the commitment is an **Administrative correction**. A correction that changes the meaning must use the material-change classification that matches the substance.
 
@@ -70,10 +70,34 @@ The changelog classifications are:
 - Policy withdrawal
 - Administrative correction
 
+The corresponding machine-readable values are `clarification`, `evidence-update`, `cost-or-timeline-update`, `scope-expansion`, `scope-reduction`, `position-change`, `policy-withdrawal` and `administrative-correction`.
+
+Commitment effects use `no-material-change`, `expands`, `reduces`, `changes-position` or `withdraws`. The deterministic validator enforces conservative combinations: clarifications, evidence updates and administrative corrections do not materially change a commitment; scope expansions expand; scope reductions reduce; position changes change the position; and withdrawals withdraw. A cost or timeline update may leave the commitment materially unchanged, expand it or reduce it.
+
+A genuine new commitment is recorded as a scope expansion with the `Not applicable: new commitment` previous-wording marker. A genuine withdrawal uses the `Not applicable: commitment withdrawn` new-wording marker. Fake old or new wording is prohibited.
+
+## Evidence and public implementation
+
+Each supporting-evidence item must be a public HTTPS link with a concise explanation of what it supports. The immutable record must also identify exact website routes and public artifacts that need deliberate review. Repository Markdown is never an automatic source for campaign website body copy; a website wording change requires a separate reviewed website pull request.
+
+## Versioning
+
+- Patch versions are for administrative corrections and clarifications that do not change the commitment.
+- Minor versions are for evidence, cost or timeline changes, scope changes, new commitments and ordinary position revisions.
+- Major versions are reserved for a fundamental platform reset, not routine campaign evolution.
+
+`CHANGELOG.md` is a concise release index linking the immutable record. It does not duplicate the full explanation or require a commit to contain its own final SHA.
+
+## Validation and bypass visibility
+
+Validation compares the predecessor and proposed repository states rather than one brittle diff line. It normalizes Markdown and whitespace conservatively, checks paragraphs, headings and list items against the full affected files, requires the declared scope to exactly match changed political records, and protects merged change records from later editing or deletion.
+
+Malformed records, undocumented direct edits, mismatched scope and ambiguous associations fail validation. If such a change nevertheless reaches the repository through an exceptional administrative bypass, the public website must keep the tracked commit visible as an `Unclassified repository change`. It must not hide the change or invent political meaning.
+
 ## Retired or withdrawn policies
 
 A retired or withdrawn policy will not be erased. Its file will be retained, its status will be changed, the withdrawal or replacement will be explained and the prior versions will remain available through Git history.
 
 ## Historical boundary
 
-This repository begins forward tracking with its initial baseline commit. Git history does not reconstruct edits made before the repository existed.
+Forward tracking begins at **2026-07-24T09:00:00-04:00** with tagged baseline `v1.0.0` at commit `573d624fdd000da86eca654f882f02c01f6fa29c`. Earlier versions of later records remain available in Git history. This repository does not reconstruct private development, website edits or public statements from before the tracking boundary.

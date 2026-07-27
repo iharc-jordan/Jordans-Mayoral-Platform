@@ -1,6 +1,6 @@
 # Changelog
 
-Material changes to the public platform and campaign commitments are recorded here.
+Material changes to the public platform and campaign commitments are indexed here. The authoritative explanation for each later change is its immutable `changes/*.md` record; the Git diff proves the textual change.
 
 Future changes are classified as:
 
@@ -12,6 +12,8 @@ Future changes are classified as:
 - Position change
 - Policy withdrawal
 - Administrative correction
+
+Future entries contain only the version, date, title, classification, exact affected record names, a relative link to the immutable change record, and a release or commit reference when one is available through the normal release workflow. They do not duplicate the full change explanation or require a commit to contain its own final SHA.
 
 ## [v1.0.0] - 2026-07-24
 
