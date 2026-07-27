@@ -246,7 +246,7 @@ function validateExactScope(recordPaths, changedTrackedPaths, errors) {
 }
 
 function blocksMatch(claim, changedBlock) {
-  return changedBlock.includes(claim) || claim.includes(changedBlock);
+  return claim === changedBlock;
 }
 
 function validateChangedWording({ previous, next, affectedRecords, baseFiles, proposedFiles, isAddition, isWithdrawal, errors }) {

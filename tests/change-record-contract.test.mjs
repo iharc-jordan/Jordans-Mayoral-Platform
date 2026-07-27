@@ -185,7 +185,7 @@ test("each file in an ordinary multi-file change needs tied previous and new wor
 
 test("Markdown headings, lists, and line wrapping normalize conservatively", () => {
   assert.equal(normalizeMarkdown("## A heading\n\n- A wrapped\n  phrase"), "a heading a wrapped phrase");
-  let record = replaceSection(fixtureRecord, "Previous wording", "> The fictional municipality will study blue paper\n> lanterns in one imaginary park.");
+  let record = replaceSection(fixtureRecord, "Previous wording", "The fictional municipality will study blue paper\nlanterns in one imaginary park.");
   record = replaceSection(record, "New wording", "- The fictional municipality will study blue paper lanterns in one imaginary park for one imaginary week.");
   assert.deepEqual(errors({ record }), []);
 });
@@ -196,6 +196,28 @@ test("unchanged old and new quotes cannot explain a different political edit", (
   const result = errors({ record }).join("\n");
   assert.match(result, /Previous wording is present but is not part of the actual semantic change/);
   assert.match(result, /New wording is present but is not part of the actual semantic change/);
+});
+
+test("partial or embellished wording cannot stand in for the exact semantic change", () => {
+  let partial = replaceSection(fixtureRecord, "Previous wording", "The fictional municipality");
+  partial = replaceSection(partial, "New wording", "The fictional municipality");
+  const partialResult = errors({ record: partial }).join("\n");
+  assert.match(partialResult, /Previous wording is present but is not part of the actual semantic change/);
+  assert.match(partialResult, /New wording is present but is not part of the actual semantic change/);
+
+  let embellished = replaceSection(
+    fixtureRecord,
+    "Previous wording",
+    "The fictional municipality will study blue paper lanterns in one imaginary park. Invented extra condition.",
+  );
+  embellished = replaceSection(
+    embellished,
+    "New wording",
+    "The fictional municipality will study blue paper lanterns in one imaginary park for one imaginary week. Invented extra condition.",
+  );
+  const embellishedResult = errors({ record: embellished }).join("\n");
+  assert.match(embellishedResult, /Previous wording is present but is not part of the actual semantic change/);
+  assert.match(embellishedResult, /New wording is present but is not part of the actual semantic change/);
 });
 
 test("a quoted semantic block moved within a record is tied to the LCS delta", () => {
