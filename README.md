@@ -39,7 +39,7 @@ New commitments use `Not applicable: new commitment` instead of invented previou
 
 When `CAMPAIGN-RULES.md` changes, its numbered H2 headings provide stable section identifiers: Rule 1 is `rule-1` through Rule 18 as `rule-18`. The immutable record must add `affected_rule_sections` as a YAML list containing exactly the sections whose political semantics changed. The validator derives that list independently from the predecessor and proposed files. Website page declarations remain review context and do not authorize route scope.
 
-Run `npm test` and `npm run validate -- --base <base-sha> --head <head-sha>` before review. Validation fails closed when a political record lacks exactly one new record, scope or wording cannot be verified, a record is malformed, or an existing historical record is edited or deleted.
+Run `npm test` and `npm run validate -- --base BASE_SHA --head HEAD_SHA` before review. Validation fails closed when a political record lacks exactly one new record, scope or wording cannot be verified, a record is malformed, or an existing historical record is edited or deleted.
 
 Retired or withdrawn commitments will remain available in Git history and will be marked rather than silently deleted.
 
