@@ -1,0 +1,2 @@
+Clearly fictional disposable canary for Issue #37 trusted-validation bootstrap verification.
+This branch must be closed without merging.
