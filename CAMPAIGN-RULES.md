@@ -103,13 +103,13 @@ The limit applies consistently to eligible monetary and in-kind contributions. A
 
 **Public evidence:** Contribution distribution, returned or refunded contributions, and approved finance publications.
 
-## 14. No bundled or coordinated influence
+## 14. Facts must be sourced. Opinions must be identified.
 
-> Contributions cannot be coordinated to create disproportionate influence.
+> Material factual claims will be backed by identifiable public evidence.
 
-The campaign will not accept bundled fundraising arranged through a household, business, developer, municipal contractor, lobbyist, union, association or other interest group to get around the individual limit or concentrate influence.
+The campaign will not publish material factual claims about another candidate, public institution, municipal decision or policy proposal unless those claims are supported by identifiable public evidence. Estimates, interpretations, inferences and political opinions will be clearly identified as such. If the campaign publishes something materially wrong, the correction and original wording will remain publicly accessible.
 
-**Public evidence:** Contribution distribution, compliance review, and disclosed returned contributions.
+**Public evidence:** Source links, public corrections, and the platform-change history.
 
 ## 15. No donor priority or preferential access
 
