@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -10,6 +12,7 @@ import {
   WITHDRAWAL_MARKER,
   normalizeMarkdown,
   parseFrontMatter,
+  semanticBlocks,
   validateChangeSet,
 } from "../scripts/change-record-contract.mjs";
 
@@ -20,16 +23,17 @@ const recordPath = "changes/2099-01-01-fictional-civic-lanterns.md";
 const policyPath = "platform/fictional-civic-lanterns.md";
 
 function read(relativePath) {
-  return fs.readFileSync(path.join(fixtureRoot, relativePath), "utf8");
+  return fs.readFileSync(path.join(fixtureRoot, relativePath), "utf8").replace(/\r\n?/g, "\n");
 }
 
 const basePolicy = read("base/platform/fictional-civic-lanterns.md");
 const proposedPolicy = read("proposed/platform/fictional-civic-lanterns.md");
 const fixtureRecord = read("proposed/changes/2099-01-01-fictional-civic-lanterns.md");
 const fixtureChangelog = read("proposed/CHANGELOG.md");
+const baseChangelog = "# Changelog\n\n## [v1.0.0] - 2098-12-31\n\n### Fictional initial baseline\n";
 
 function changeSet({ record = fixtureRecord, base = {}, proposed = {}, changes } = {}) {
-  const baseFiles = { [policyPath]: basePolicy, "CHANGELOG.md": "# Changelog\n", ...base };
+  const baseFiles = { [policyPath]: basePolicy, "CHANGELOG.md": baseChangelog, ...base };
   const proposedFiles = {
     [policyPath]: proposedPolicy,
     [recordPath]: record,
@@ -77,13 +81,34 @@ test("all established classifications parse and their canonical effects validate
     "policy-withdrawal": "withdraws",
     "administrative-correction": "no-material-change",
   };
+  const labels = {
+    clarification: "Clarification",
+    "evidence-update": "Evidence update",
+    "cost-or-timeline-update": "Cost or timeline update",
+    "scope-expansion": "Scope expansion",
+    "scope-reduction": "Scope reduction",
+    "position-change": "Position change",
+    "policy-withdrawal": "Policy withdrawal",
+    "administrative-correction": "Administrative correction",
+  };
   for (const classification of CLASSIFICATIONS) {
     let record = replaceField(fixtureRecord, "classification", classification);
     record = replaceField(record, "effect_on_commitment", effects[classification]);
+    const usesPatch = ["clarification", "administrative-correction"].includes(classification);
+    const version = usesPatch ? "v1.0.1" : "v1.1.0";
+    record = replaceField(record, "version", version);
+    const changelog = fixtureChangelog
+      .replace("v1.0.1", version)
+      .replace("Classification: Clarification", `Classification: ${labels[classification]}`);
     if (classification === "policy-withdrawal") {
+      const base = `---\nstatus: active\n---\n${basePolicy}`;
+      const proposed = `---\nstatus: withdrawn\n---\n${basePolicy}`;
+      record = replaceSection(record, "Previous wording", "status: active");
       record = replaceSection(record, "New wording", WITHDRAWAL_MARKER);
+      assert.deepEqual(errors({ record, base: { [policyPath]: base }, proposed: { [policyPath]: proposed, "CHANGELOG.md": changelog } }), [], classification);
+    } else {
+      assert.deepEqual(errors({ record, proposed: { "CHANGELOG.md": changelog } }), [], classification);
     }
-    assert.deepEqual(errors({ record }), [], classification);
   }
 });
 
@@ -95,15 +120,23 @@ test("incompatible classification and commitment effect fail closed", () => {
 test("a genuine new commitment uses the explicit one-sided marker", () => {
   let record = replaceField(fixtureRecord, "classification", "scope-expansion");
   record = replaceField(record, "effect_on_commitment", "expands");
+  record = replaceField(record, "version", "v1.1.0");
   record = replaceSection(record, "Previous wording", NEW_COMMITMENT_MARKER);
-  assert.deepEqual(errors({ record, base: { [policyPath]: "" } }), []);
+  record = replaceSection(record, "New wording", semanticBlocks(proposedPolicy).map((block) => `- ${block}`).join("\n"));
+  const changelog = fixtureChangelog.replace("v1.0.1", "v1.1.0").replace("Clarification", "Scope expansion");
+  assert.deepEqual(errors({ record, base: { [policyPath]: "" }, proposed: { "CHANGELOG.md": changelog } }), []);
 });
 
 test("a withdrawal uses the explicit one-sided marker without fabricated new wording", () => {
   let record = replaceField(fixtureRecord, "classification", "policy-withdrawal");
   record = replaceField(record, "effect_on_commitment", "withdraws");
+  record = replaceField(record, "version", "v1.1.0");
+  record = replaceSection(record, "Previous wording", "status: active");
   record = replaceSection(record, "New wording", WITHDRAWAL_MARKER);
-  assert.deepEqual(errors({ record }), []);
+  const base = `---\nstatus: active\n---\n${basePolicy}`;
+  const proposed = `---\nstatus: withdrawn\n---\n${basePolicy}`;
+  const changelog = fixtureChangelog.replace("v1.0.1", "v1.1.0").replace("Clarification", "Policy withdrawal");
+  assert.deepEqual(errors({ record, base: { [policyPath]: base }, proposed: { [policyPath]: proposed, "CHANGELOG.md": changelog } }), []);
 });
 
 test("scope must include every changed political record", () => {
@@ -145,11 +178,15 @@ test("an exact multi-file conceptual change validates paragraphs and list items"
     "New wording",
     "- The fictional municipality will study blue paper lanterns in one imaginary park for one imaginary week.\n- Ring two imaginary cloud bells.",
   );
+  const changelog = fixtureChangelog.replace(
+    "Affected records: `platform/fictional-civic-lanterns.md`",
+    "Affected records: `platform/fictional-civic-lanterns.md`, `platform/fictional-cloud-bells.md`",
+  );
   assert.deepEqual(
     errors({
       record,
       base: { [second]: oldSecond },
-      proposed: { [second]: newSecond },
+      proposed: { [second]: newSecond, "CHANGELOG.md": changelog },
       changes: [
         { status: "M", path: policyPath },
         { status: "M", path: second },
@@ -228,14 +265,16 @@ test("a quoted semantic block moved within a record is tied to the LCS delta", (
   assert.deepEqual(errors({ record, base: { [policyPath]: base }, proposed: { [policyPath]: proposed } }), []);
 });
 
-test("a format-only tracked edit fails closed because it has no semantic delta", () => {
+test("a format-only tracked edit does not manufacture a fictional political delta", () => {
   const base = "# Fictional record\n\nA fictional sentence wraps across\nsource lines.\n";
   const proposed = "# Fictional record\n\nA fictional sentence wraps across source lines.\n";
-  let record = replaceSection(fixtureRecord, "Previous wording", "A fictional sentence wraps across source lines.");
-  record = replaceSection(record, "New wording", "A fictional sentence wraps across source lines.");
-  assert.match(
-    errors({ record, base: { [policyPath]: base }, proposed: { [policyPath]: proposed } }).join("\n"),
-    /has no semantic Markdown change/,
+  assert.deepEqual(
+    validateChangeSet({
+      baseFiles: { [policyPath]: base },
+      proposedFiles: { [policyPath]: proposed },
+      changes: [{ status: "M", path: policyPath }],
+    }),
+    [],
   );
 });
 
@@ -302,7 +341,7 @@ test("historical record edits and deletions fail", () => {
 test("a political change must update and link the concise changelog", () => {
   const noChangelog = changeSet({ changes: [{ status: "M", path: policyPath }, { status: "A", path: recordPath }] });
   assert.match(validateChangeSet(noChangelog).join("\n"), /must update CHANGELOG/);
-  assert.match(errors({ proposed: { "CHANGELOG.md": "# Changelog\n" } }).join("\n"), /does not include v1.0.1/);
+  assert.match(errors({ proposed: { "CHANGELOG.md": "# Changelog\n" } }).join("\n"), /visible changelog entry.*v1.0.1/i);
 });
 
 test("the actual PR template contains the immutable review contract", () => {
@@ -333,4 +372,250 @@ test("the fixture is not a public change record", () => {
   const publicRecords = fs.readdirSync(path.join(root, "changes")).filter((name) => name.endsWith(".md"));
   assert.deepEqual(publicRecords, []);
   assert.equal(parseFrontMatter(fixtureRecord).data.id, "2099-01-01-fictional-civic-lanterns");
+});
+
+test("every removed and added fictional semantic block must be documented", () => {
+  const base = `${basePolicy}\nA second fictional promise keeps three imaginary lantern logs.\n`;
+  const proposed = `${proposedPolicy}\nA second fictional promise keeps four imaginary lantern logs.\n`;
+  assert.match(
+    errors({ base: { [policyPath]: base }, proposed: { [policyPath]: proposed } }).join("\n"),
+    /unaccounted removed semantic block|unaccounted added semantic block/i,
+  );
+});
+
+test("politically meaningful fictional front matter is part of the semantic delta", () => {
+  const base = `---\nstatus: active\nlast_verified: 2098-12-31\n---\n${basePolicy}`;
+  const proposed = `---\nstatus: withdrawn\nlast_verified: 2099-01-01\n---\n${proposedPolicy}`;
+  const result = errors({ base: { [policyPath]: base }, proposed: { [policyPath]: proposed } }).join("\n");
+  assert.match(result, /unaccounted removed semantic block.*status: active/i);
+  assert.match(result, /unaccounted removed semantic block.*lastverified: 2098-12-31/i);
+});
+
+test("deleting a tracked fictional political record is rejected", () => {
+  let record = replaceField(fixtureRecord, "classification", "policy-withdrawal");
+  record = replaceField(record, "effect_on_commitment", "withdraws");
+  record = replaceSection(record, "New wording", WITHDRAWAL_MARKER);
+  assert.match(
+    errors({
+      record,
+      proposed: { [policyPath]: undefined },
+      changes: [
+        { status: "D", path: policyPath },
+        { status: "A", path: recordPath },
+        { status: "M", path: "CHANGELOG.md" },
+      ],
+    }).join("\n"),
+    /Tracked political records cannot be deleted/i,
+  );
+});
+
+test("versions are unique, monotonic, and classification appropriate", () => {
+  const duplicateBaseChangelog = `${fixtureChangelog}\n## [v1.0.0] - 2098-12-31\n`;
+  assert.match(errors({ base: { "CHANGELOG.md": duplicateBaseChangelog } }).join("\n"), /already exists|duplicate/i);
+
+  const regressiveRecord = replaceField(fixtureRecord, "version", "v0.9.0");
+  assert.match(errors({ record: regressiveRecord }).join("\n"), /later than predecessor|expected v1\.0\.1/i);
+
+  let materialPatch = replaceField(fixtureRecord, "classification", "scope-expansion");
+  materialPatch = replaceField(materialPatch, "effect_on_commitment", "expands");
+  assert.match(errors({ record: materialPatch }).join("\n"), /scope-expansion.*minor|expected v1\.1\.0/i);
+
+  const clarificationMinor = replaceField(fixtureRecord, "version", "v1.1.0");
+  assert.match(errors({ record: clarificationMinor }).join("\n"), /clarification.*patch|expected v1\.0\.1/i);
+});
+
+test("a fictional political change cannot modify its own validation machinery", () => {
+  assert.match(
+    errors({
+      proposed: { "scripts/change-record-contract.mjs": "export const weakened = true;\n" },
+      changes: [
+        { status: "M", path: policyPath },
+        { status: "A", path: recordPath },
+        { status: "M", path: "CHANGELOG.md" },
+        { status: "M", path: "scripts/change-record-contract.mjs" },
+      ],
+    }).join("\n"),
+    /cannot modify validation or governance machinery/i,
+  );
+});
+
+test("the pull-request validator is base-sourced and treats the proposed tree only as data", () => {
+  const workflow = fs.readFileSync(
+    path.join(root, ".github", "workflows", "trusted-validate-change-records.yml"),
+    "utf8",
+  );
+  assert.match(workflow, /pull_request_target:/);
+  assert.match(workflow, /^\s{2}trusted-validate:\s*$/m);
+  assert.match(workflow, /^\s{4}name:\s+trusted-validate\s*$/m);
+  assert.doesNotMatch(workflow, /^\s{2}validate:\s*$/m);
+  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
+  assert.match(workflow, /path: trusted/);
+  assert.match(workflow, /repository: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name \}\}/);
+  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
+  assert.match(workflow, /--repo-root "\$\{\{ github\.workspace \}\}\/proposed"/);
+  assert.match(workflow, /git fetch --no-tags/);
+  assert.match(workflow, /node scripts\/validate-change-records\.mjs/);
+  assert.doesNotMatch(workflow, /working-directory: proposed\s+run: npm/i);
+  assert.equal(workflow.match(/persist-credentials: false/g)?.length, 2);
+
+  const candidateWorkflow = fs.readFileSync(
+    path.join(root, ".github", "workflows", "validate-change-records.yml"),
+    "utf8",
+  );
+  assert.match(candidateWorkflow, /pull_request:/);
+  assert.match(candidateWorkflow, /^\s{2}validate:\s*$/m);
+  assert.doesNotMatch(candidateWorkflow, /^\s{2}trusted-validate:\s*$/m);
+  assert.match(candidateWorkflow, /run: npm test/);
+  assert.match(candidateWorkflow, /run: npm run validate/);
+
+  const settings = fs.readFileSync(path.join(root, "REPOSITORY-SETTINGS.md"), "utf8");
+  assert.match(settings, /Trusted public change-record validation \/ trusted-validate/);
+  assert.match(settings, /Validate public change records \/ validate/);
+  assert.match(settings, /base-sourced trusted check/);
+});
+
+test("required change-record headings must be rendered, not fenced", () => {
+  const frontMatterEnd = fixtureRecord.indexOf("\n---\n", 4) + 5;
+  const fenced = `${fixtureRecord.slice(0, frontMatterEnd)}\`\`\`markdown\n${fixtureRecord.slice(frontMatterEnd)}\n\`\`\`\n`;
+  assert.match(errors({ record: fenced }).join("\n"), /human-readable H1 title|rendered/i);
+
+  const htmlHidden = `${fixtureRecord.slice(0, frontMatterEnd)}<div>\n${fixtureRecord.slice(frontMatterEnd)}\n</div>\n`;
+  assert.match(errors({ record: htmlHidden }).join("\n"), /human-readable H1 title|rendered/i);
+});
+
+test("a newly added changelog entry must be visible and structurally complete", () => {
+  const hidden = `# Changelog\n\n<!-- ${fixtureChangelog.replace("# Changelog", "")} -->\n`;
+  assert.match(errors({ proposed: { "CHANGELOG.md": hidden } }).join("\n"), /visible changelog entry|newly added/i);
+});
+
+test("public implementation paths are exact tokens rather than substrings", () => {
+  const collision = fixtureRecord.replace(
+    "The separately reviewed fictional page `/priorities/fictional-civic-lanterns`",
+    "The separately reviewed fictional page `/priorities/fictional-civic-lanterns-longer`",
+  );
+  assert.match(errors({ record: collision }).join("\n"), /does not identify \/priorities\/fictional-civic-lanterns/i);
+});
+
+test("the website root route is a valid exact public implementation path", () => {
+  const rootRecord = fixtureRecord
+    .replace('  - "/priorities/fictional-civic-lanterns"', '  - "/"')
+    .replace("`/priorities/fictional-civic-lanterns`", "`/`");
+  assert.deepEqual(errors({ record: rootRecord }), []);
+});
+
+test("unexpected uppercase and nested platform Markdown cannot bypass tracking", () => {
+  for (const unexpected of ["platform/New-Fictional-Commitment.md", "platform/nested/fictional-commitment.md", "platform/README.md"]) {
+    const result = validateChangeSet({
+      baseFiles: unexpected === "platform/README.md" ? { [unexpected]: "# Documentation index\n" } : {},
+      proposedFiles: { [unexpected]: "# Fictional commitment\n" },
+      changes: [{ status: unexpected === "platform/README.md" ? "M" : "A", path: unexpected }],
+    });
+    assert.match(result.join("\n"), /nonconforming political Markdown path/i, unexpected);
+  }
+});
+
+test("semantic comparison rejects adversarial fictional block counts before quadratic allocation", () => {
+  const fragmented = Array.from({ length: 700 }, (_, index) => `- Fictional item ${index}.`).join("\n");
+  const result = validateChangeSet({
+    baseFiles: { [policyPath]: fragmented },
+    proposedFiles: { [policyPath]: `${fragmented}\n- One additional fictional item.` },
+    changes: [{ status: "M", path: policyPath }],
+  });
+  assert.match(result.join("\n"), /semantic comparison exceeds the explicit limit/i);
+});
+
+test("duplicate declared wording cannot reuse one changed semantic block", () => {
+  const duplicatePrevious = replaceSection(
+    fixtureRecord,
+    "Previous wording",
+    `${semanticBlocks(basePolicy).find((block) => block.includes("one imaginary park"))}\n\n${semanticBlocks(basePolicy).find((block) => block.includes("one imaginary park"))}`,
+  );
+  assert.match(errors({ record: duplicatePrevious }).join("\n"), /exactly cover every removed political semantic block/i);
+});
+
+test("supporting evidence URLs must be genuinely public HTTPS targets", () => {
+  for (const unsafe of [
+    "https://localhost/admin",
+    "https://127.0.0.1/evidence",
+    "https://169.254.1.2/evidence",
+    "https://10.0.0.8/evidence",
+    "https://192.168.1.8/evidence",
+    "https://[::1]/evidence",
+    "https://[fd00::1]/evidence",
+    "https://user:secret@example.com/evidence",
+  ]) {
+    const record = fixtureRecord.replace("https://example.com/fictional-lantern-standard", unsafe);
+    assert.match(errors({ record }).join("\n"), /genuinely public HTTPS|public HTTPS/i, unsafe);
+  }
+});
+
+test("an immutable fictional record path and ID cannot be reintroduced", () => {
+  const result = validateChangeSet({
+    ...changeSet(),
+    historicalRecordPaths: [recordPath],
+    historicalRecordIds: ["2099-01-01-fictional-civic-lanterns"],
+  });
+  assert.match(result.join("\n"), /previously used immutable record path|previously used immutable record id/i);
+});
+
+test("the CLI discovers a deleted immutable fictional record in Git history", () => {
+  const temporaryRepository = fs.mkdtempSync(path.join(os.tmpdir(), "platform-history-"));
+  const historicalPath = "changes/2099-01-01-fictional-history-record.md";
+  const historicalId = "2099-01-01-fictional-history-record";
+  const historicalSource = `---\nid: "${historicalId}"\n---\n# Fictional historical record\n`;
+  const git = (...args) => execFileSync("git", args, {
+    cwd: temporaryRepository,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+
+  try {
+    git("init");
+    git("config", "user.name", "Fictional Test Runner");
+    git("config", "user.email", "fictional-test@example.com");
+    git("config", "core.autocrlf", "false");
+    git("fetch", "--no-tags", root, BASELINE_COMMIT);
+    git("checkout", "-b", "synthetic-history", "FETCH_HEAD");
+
+    const absoluteRecordPath = path.join(temporaryRepository, ...historicalPath.split("/"));
+    fs.mkdirSync(path.dirname(absoluteRecordPath), { recursive: true });
+    fs.writeFileSync(absoluteRecordPath, historicalSource);
+    git("add", historicalPath);
+    git("commit", "-m", "Add fictional historical record");
+
+    fs.rmSync(absoluteRecordPath);
+    git("add", "--all");
+    git("commit", "-m", "Delete fictional historical record");
+    const base = git("rev-parse", "HEAD");
+
+    fs.writeFileSync(absoluteRecordPath, historicalSource);
+    git("add", historicalPath);
+    git("commit", "-m", "Attempt to reintroduce fictional historical record");
+    const head = git("rev-parse", "HEAD");
+
+    let validationOutput = "";
+    try {
+      execFileSync(
+        process.execPath,
+        [
+          path.join(root, "scripts", "validate-change-records.mjs"),
+          "--repo-root",
+          temporaryRepository,
+          "--base",
+          base,
+          "--head",
+          head,
+        ],
+        { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+      );
+      assert.fail("The CLI unexpectedly accepted a reintroduced immutable record.");
+    } catch (error) {
+      validationOutput = `${error.stdout ?? ""}\n${error.stderr ?? ""}`;
+    }
+
+    assert.match(validationOutput, new RegExp(`Previously used immutable record path cannot be reintroduced: ${historicalPath.replaceAll(".", "\\.")}`, "i"));
+    assert.match(validationOutput, new RegExp(`Previously used immutable record ID cannot be reused: ${historicalId}`, "i"));
+  } finally {
+    fs.rmSync(temporaryRepository, { recursive: true, force: true });
+  }
 });

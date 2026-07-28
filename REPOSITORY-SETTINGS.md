@@ -5,7 +5,8 @@ The following GitHub settings are manual administrative controls. Documentation 
 ## Required `main` protections
 
 - Require a pull request before merging to `main`.
-- Require the `Validate public change records / validate` status check.
+- Require the authoritative `Trusted public change-record validation / trusted-validate` status check.
+- Also require `Validate public change records / validate` as defense-in-depth coverage of the proposed validator and tests; it is not a substitute for the base-sourced trusted check.
 - Block force pushes.
 - Block branch deletion.
 - Restrict administrative bypass to genuine emergencies and review every bypass publicly.
@@ -21,7 +22,7 @@ The pull request is review context. The immutable `changes/*.md` file merged wit
 After changing repository settings, verify in GitHub that:
 
 1. a direct push to `main` is rejected;
-2. the validation workflow is required before merge;
+2. both validation checks are required before merge, with `Trusted public change-record validation / trusted-validate` treated as authoritative;
 3. force pushes and branch deletion are blocked;
 4. squash merging is available and rebase merging is disabled;
 5. bypass access is limited to the intended administrators.

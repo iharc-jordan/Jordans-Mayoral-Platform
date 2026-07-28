@@ -62,10 +62,43 @@ export const WITHDRAWAL_MARKER = "Not applicable: commitment withdrawn";
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const ID_PATTERN = /^\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const VERSION_PATTERN = /^v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/;
-const ROUTE_PATTERN = /^\/(?!\/)(?:[a-z0-9][a-z0-9-]*)(?:\/[a-z0-9][a-z0-9-]*)*$/;
+const ROUTE_PATTERN = /^(?:\/|\/(?!\/)(?:[a-z0-9][a-z0-9-]*)(?:\/[a-z0-9][a-z0-9-]*)*)$/;
 const ARTIFACT_PATTERN = /^\/(?!\/)(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/;
 const RECORD_PATTERN = /^(?:CAMPAIGN-RULES\.md|platform\/[a-z0-9]+(?:-[a-z0-9]+)*\.md)$/;
 const RECORD_FILE_PATTERN = /^changes\/[^/]+\.md$/;
+export const PLATFORM_DOCUMENTATION_ALLOWLIST = Object.freeze(["platform/README.md"]);
+export const ADMINISTRATIVE_FRONT_MATTER_ALLOWLIST = Object.freeze([]);
+export const MAX_SEMANTIC_BLOCKS = 512;
+export const MAX_SEMANTIC_COMPARISONS = 100_000;
+const VALIDATION_MACHINERY_PATTERNS = Object.freeze([
+  /^scripts\//,
+  /^tests\//,
+  /^\.github\/workflows\//,
+  /^package(?:-lock)?\.json$/,
+  /^AGENTS\.md$/,
+  /^METHODOLOGY\.md$/,
+  /^REPOSITORY-SETTINGS\.md$/,
+  /^\.github\/pull_request_template\.md$/,
+]);
+const PATCH_CLASSIFICATIONS = new Set(["clarification", "administrative-correction"]);
+const MINOR_CLASSIFICATIONS = new Set([
+  "evidence-update",
+  "cost-or-timeline-update",
+  "scope-expansion",
+  "scope-reduction",
+  "position-change",
+  "policy-withdrawal",
+]);
+const CLASSIFICATION_LABELS = Object.freeze({
+  clarification: "Clarification",
+  "evidence-update": "Evidence update",
+  "cost-or-timeline-update": "Cost or timeline update",
+  "scope-expansion": "Scope expansion",
+  "scope-reduction": "Scope reduction",
+  "position-change": "Position change",
+  "policy-withdrawal": "Policy withdrawal",
+  "administrative-correction": "Administrative correction",
+});
 
 function isValidDate(value) {
   if (!DATE_PATTERN.test(value)) return false;
@@ -132,18 +165,42 @@ export function parseFrontMatter(source) {
   return { data, body: normalized.slice(end + 5) };
 }
 
+export function renderedMarkdown(source) {
+  const withoutComments = source.replace(/<!--[^]*?-->/g, "");
+  const visible = [];
+  let fence = null;
+  let htmlBlock = null;
+  const htmlBlockStart = /^\s{0,3}<(address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul)(?:\s|>|\/)/i;
+  for (const line of withoutComments.replace(/\r\n?/g, "\n").split("\n")) {
+    const marker = line.match(/^\s{0,3}(`{3,}|~{3,})/);
+    if (marker) {
+      const character = marker[1][0];
+      if (!fence) fence = { character, length: marker[1].length };
+      else if (fence.character === character && marker[1].length >= fence.length) fence = null;
+      visible.push("");
+      continue;
+    }
+    if (!fence && !htmlBlock) htmlBlock = line.match(htmlBlockStart)?.[1]?.toLowerCase() ?? null;
+    if (fence || htmlBlock || /^(?: {4}|\t)/.test(line)) visible.push("");
+    else visible.push(line);
+    if (htmlBlock && new RegExp(`</${htmlBlock}\\s*>`, "i").test(line)) htmlBlock = null;
+  }
+  return visible.join("\n");
+}
+
 export function parseSections(body) {
-  const titleMatch = body.match(/^#\s+(.+)$/m);
+  const rendered = renderedMarkdown(body);
+  const titleMatch = rendered.match(/^#\s+(.+)$/m);
   if (!titleMatch) throw new Error("Change record requires one human-readable H1 title.");
   const sections = {};
   const headingPattern = /^##\s+(.+)\s*$/gm;
-  const headings = [...body.matchAll(headingPattern)];
+  const headings = [...rendered.matchAll(headingPattern)];
   for (const [index, heading] of headings.entries()) {
     const name = heading[1].trim();
     if (Object.hasOwn(sections, name)) throw new Error(`Duplicate section: ${name}.`);
     const start = heading.index + heading[0].length;
-    const end = headings[index + 1]?.index ?? body.length;
-    sections[name] = body.slice(start, end).trim();
+    const end = headings[index + 1]?.index ?? rendered.length;
+    sections[name] = rendered.slice(start, end).trim();
   }
   return { title: titleMatch[1].trim(), sections };
 }
@@ -190,15 +247,54 @@ export function semanticBlocks(value) {
 
 function contentBlocks(value) {
   const normalized = value.replace(/\r\n?/g, "\n");
-  const withoutFrontMatter = normalized.startsWith("---\n")
-    ? normalized.replace(/^---\n[^]*?\n---\n/, "")
-    : normalized;
-  return semanticBlocks(withoutFrontMatter);
+  let body = normalized;
+  const frontMatterBlocks = [];
+  if (normalized.startsWith("---\n")) {
+    const end = normalized.indexOf("\n---\n", 4);
+    if (end !== -1) {
+      const lines = normalized.slice(4, end).split("\n");
+      let field = null;
+      let values = [];
+      const flush = () => {
+        if (field && !ADMINISTRATIVE_FRONT_MATTER_ALLOWLIST.includes(field)) {
+          const block = normalizeMarkdown(`${field}: ${values.join(" ")}`);
+          if (block) frontMatterBlocks.push(block);
+        }
+        field = null;
+        values = [];
+      };
+      for (const rawLine of lines) {
+        if (!rawLine.trim() || rawLine.trimStart().startsWith("#")) continue;
+        const nextField = rawLine.match(/^([A-Za-z_][A-Za-z0-9_-]*):(?:\s*(.*))?$/);
+        if (nextField) {
+          flush();
+          field = nextField[1];
+          values = nextField[2]?.trim() ? [unquote(nextField[2])] : [];
+        } else if (field) {
+          values.push(rawLine.trim().replace(/^[-*]\s+/, ""));
+        }
+      }
+      flush();
+      body = normalized.slice(end + 5);
+    }
+  }
+  return [...frontMatterBlocks.sort(), ...semanticBlocks(body)];
 }
 
 export function semanticDelta(previous, proposed) {
   const before = contentBlocks(previous);
   const after = contentBlocks(proposed);
+  if (
+    before.length > MAX_SEMANTIC_BLOCKS
+    || after.length > MAX_SEMANTIC_BLOCKS
+    || before.length * after.length > MAX_SEMANTIC_COMPARISONS
+  ) {
+    return {
+      removed: [],
+      added: [],
+      complexityError: `Semantic comparison exceeds the explicit limit of ${MAX_SEMANTIC_BLOCKS} blocks and ${MAX_SEMANTIC_COMPARISONS} comparisons.`,
+    };
+  }
   const lengths = Array.from({ length: before.length + 1 }, () => new Uint32Array(after.length + 1));
 
   for (let left = before.length - 1; left >= 0; left -= 1) {
@@ -249,6 +345,13 @@ function blocksMatch(claim, changedBlock) {
   return claim === changedBlock;
 }
 
+function sameMultiset(left, right) {
+  if (left.length !== right.length) return false;
+  const sortedLeft = [...left].sort();
+  const sortedRight = [...right].sort();
+  return sortedLeft.every((value, index) => value === sortedRight[index]);
+}
+
 function validateChangedWording({ previous, next, affectedRecords, baseFiles, proposedFiles, isAddition, isWithdrawal, errors }) {
   const previousClaims = isAddition ? [] : semanticBlocks(previous);
   const nextClaims = isWithdrawal ? [] : semanticBlocks(next);
@@ -261,6 +364,10 @@ function validateChangedWording({ previous, next, affectedRecords, baseFiles, pr
   }));
 
   for (const delta of deltas) {
+    if (delta.complexityError) {
+      errors.push(`${delta.recordPath}: ${delta.complexityError}`);
+      continue;
+    }
     const previousMatches = previousClaims.filter((claim) => delta.removed.some((block) => blocksMatch(claim, block)));
     const nextMatches = nextClaims.filter((claim) => delta.added.some((block) => blocksMatch(claim, block)));
     if (!delta.removed.length && !delta.added.length) {
@@ -271,6 +378,17 @@ function validateChangedWording({ previous, next, affectedRecords, baseFiles, pr
       errors.push(`No claimed previous wording is tied to the semantic withdrawal in ${delta.recordPath}.`);
     } else if (!isAddition && !isWithdrawal && (!previousMatches.length || !nextMatches.length)) {
       errors.push(`Claimed previous and new wording must both be tied to the semantic change in ${delta.recordPath}.`);
+    }
+    for (const block of delta.removed) {
+      if (!previousClaims.some((claim) => blocksMatch(claim, block))) {
+        errors.push(`Unaccounted removed semantic block in ${delta.recordPath}: ${block.slice(0, 80)}.`);
+      }
+    }
+    for (const block of delta.added) {
+      const explicitWithdrawalStatus = isWithdrawal && /^status: (?:withdrawn|retired)$/.test(block);
+      if (!explicitWithdrawalStatus && !nextClaims.some((claim) => blocksMatch(claim, block))) {
+        errors.push(`Unaccounted added semantic block in ${delta.recordPath}: ${block.slice(0, 80)}.`);
+      }
     }
   }
 
@@ -284,15 +402,65 @@ function validateChangedWording({ previous, next, affectedRecords, baseFiles, pr
       errors.push(`New wording is present but is not part of the actual semantic change: ${claim.slice(0, 80)}.`);
     }
   }
+  const removedBlocks = deltas.flatMap((delta) => delta.complexityError ? [] : delta.removed);
+  const addedBlocks = deltas.flatMap((delta) => delta.complexityError
+    ? []
+    : delta.added.filter((block) => !(isWithdrawal && /^status: (?:withdrawn|retired)$/.test(block))));
+  if (!deltas.some((delta) => delta.complexityError) && !sameMultiset(previousClaims, removedBlocks)) {
+    errors.push("Declared previous wording must exactly cover every removed political semantic block, including duplicate occurrences.");
+  }
+  if (!deltas.some((delta) => delta.complexityError) && !sameMultiset(nextClaims, addedBlocks)) {
+    errors.push("Declared new wording must exactly cover every added political semantic block, including duplicate occurrences.");
+  }
 }
 
 function evidenceItems(section) {
   const links = [];
-  const pattern = /^\s*[-*]\s+\[([^\]]+)\]\((https:\/\/[^\s)]+)\)\s*(?:[-–—:]\s*)(.+)$/gm;
+  const pattern = /^\s*[-*]\s+\[([^\]]+)\]\(([^\s)]+)\)\s*(?:[-–—:]\s*)(.+)$/gm;
   for (const match of section.matchAll(pattern)) {
     links.push({ label: match[1].trim(), href: match[2], explanation: match[3].trim() });
   }
   return links;
+}
+
+function isPublicHttpsUrl(value) {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "https:" || url.username || url.password) return false;
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host.endsWith(".internal")) return false;
+  if (
+    host === "::1" ||
+    host === "::" ||
+    host.startsWith("::ffff:") ||
+    /^f[cd][0-9a-f]:/i.test(host) ||
+    /^fe[89ab][0-9a-f]:/i.test(host) ||
+    /^2001:db8:/i.test(host)
+  ) return false;
+  const octets = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)?.slice(1).map(Number);
+  if (octets) {
+    if (octets.some((part) => part > 255)) return false;
+    const [a, b, c] = octets;
+    if (
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
+      a >= 224 ||
+      (a === 100 && b >= 64 && b <= 127) ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && ((b === 0 && (c === 0 || c === 2)) || b === 168)) ||
+      (a === 198 && (b === 18 || b === 19 || (b === 51 && c === 100))) ||
+      (a === 203 && b === 0 && c === 113)
+    ) return false;
+  } else if (!host.includes(".")) {
+    return false;
+  }
+  return true;
 }
 
 function validatePrivateContent(source, errors) {
@@ -305,6 +473,85 @@ function validatePrivateContent(source, errors) {
   if (prohibited.some((pattern) => pattern.test(source))) {
     errors.push("Change record contains a prohibited private or credential-like value.");
   }
+}
+
+function parseVersion(value) {
+  const match = value?.match(/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
+  return match ? match.slice(1).map(Number) : null;
+}
+
+function visibleChangelogEntries(source) {
+  const rendered = renderedMarkdown(source);
+  const headings = [...rendered.matchAll(/^## \[(v\d+\.\d+\.\d+)\] - (\d{4}-\d{2}-\d{2})\s*$/gm)];
+  return headings.map((heading, index) => ({
+    version: heading[1],
+    date: heading[2],
+    body: rendered.slice(heading.index + heading[0].length, headings[index + 1]?.index ?? rendered.length).trim(),
+  }));
+}
+
+function validateVersion(version, classification, baseChangelog, errors) {
+  const candidate = parseVersion(version);
+  if (!candidate) {
+    errors.push("version must be a valid semantic version.");
+    return;
+  }
+  const entries = visibleChangelogEntries(baseChangelog);
+  const versions = entries.map((entry) => ({ text: entry.version, parts: parseVersion(entry.version) })).filter((entry) => entry.parts);
+  if (!versions.length) {
+    errors.push("Unable to determine the predecessor public version from CHANGELOG.md.");
+    return;
+  }
+  if (versions.some((entry) => entry.text === version)) errors.push(`Version ${version} already exists in the predecessor changelog.`);
+  versions.sort((left, right) => {
+    for (let index = 0; index < 3; index += 1) {
+      if (left.parts[index] !== right.parts[index]) return right.parts[index] - left.parts[index];
+    }
+    return 0;
+  });
+  const predecessor = versions[0].parts;
+  let expected;
+  let kind;
+  if (PATCH_CLASSIFICATIONS.has(classification)) {
+    expected = [predecessor[0], predecessor[1], predecessor[2] + 1];
+    kind = "patch";
+  } else if (MINOR_CLASSIFICATIONS.has(classification)) {
+    expected = [predecessor[0], predecessor[1] + 1, 0];
+    kind = "minor";
+  } else {
+    return;
+  }
+  const expectedText = `v${expected.join(".")}`;
+  if (candidate.some((part, index) => part !== expected[index])) {
+    errors.push(`${classification} requires the next ${kind} version; expected ${expectedText} after v${predecessor.join(".")}.`);
+  }
+}
+
+function validateChangelogEntry({ baseChangelog, proposedChangelog, data, title, errors }) {
+  const baseEntries = visibleChangelogEntries(baseChangelog);
+  const proposedEntries = visibleChangelogEntries(proposedChangelog);
+  if (baseEntries.some((entry) => entry.version === data.version)) {
+    errors.push(`CHANGELOG.md must add a newly added version; ${data.version} already exists.`);
+  }
+  const matches = proposedEntries.filter((entry) => entry.version === data.version && entry.date === data.date);
+  if (matches.length !== 1) {
+    errors.push(`CHANGELOG.md requires one newly added visible changelog entry for ${data.version} dated ${data.date}.`);
+    return;
+  }
+  const body = matches[0].body;
+  const titleMatch = body.match(/^###\s+(.+)$/m);
+  if (titleMatch?.[1].trim() !== title) errors.push(`CHANGELOG.md entry title must exactly match "${title}".`);
+  if (!new RegExp(`^[-*] Classification: ${CLASSIFICATION_LABELS[data.classification]}\\s*$`, "m").test(body)) {
+    errors.push(`CHANGELOG.md entry must identify classification ${CLASSIFICATION_LABELS[data.classification]}.`);
+  }
+  const affectedLine = body.match(/^[-*] Affected records:\s*(.+)$/m)?.[1] ?? "";
+  const affected = [...affectedLine.matchAll(/`([^`]+)`/g)].map((match) => match[1]);
+  if (affected.length !== data.affected_records.length || affected.some((item) => !data.affected_records.includes(item))) {
+    errors.push("CHANGELOG.md entry must list the exact affected records.");
+  }
+  const expectedLink = `changes/${data.id}.md`;
+  const links = [...body.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map((match) => match[1]);
+  if (!links.includes(expectedLink)) errors.push(`CHANGELOG.md entry must link to ${expectedLink}.`);
 }
 
 export function validateRecord({ recordPath, source, baseFiles, proposedFiles, changedTrackedPaths }) {
@@ -348,11 +595,14 @@ export function validateRecord({ recordPath, source, baseFiles, proposedFiles, c
   if (!isValidDate(data.date)) errors.push("date must be a valid YYYY-MM-DD date.");
   if (!isValidDate(data.effective_date)) errors.push("effective_date must be a valid YYYY-MM-DD date.");
   if (isValidDate(data.date) && !data.id.startsWith(`${data.date}-`)) errors.push("id must begin with the record date.");
-  if (!VERSION_PATTERN.test(data.version) || data.version === "v1.0.0") errors.push("version must be a later semantic version such as v1.0.1 or v1.1.0.");
+  if (!VERSION_PATTERN.test(data.version)) errors.push("version must be a valid semantic version.");
   if (!CLASSIFICATIONS.includes(data.classification)) errors.push(`Invalid classification: ${data.classification}.`);
   if (!COMMITMENT_EFFECTS.includes(data.effect_on_commitment)) errors.push(`Invalid effect_on_commitment: ${data.effect_on_commitment}.`);
   if (!COMPATIBLE_EFFECTS[data.classification]?.includes(data.effect_on_commitment)) {
     errors.push(`Incompatible classification/effect pair: ${data.classification}/${data.effect_on_commitment}.`);
+  }
+  if (VERSION_PATTERN.test(data.version) && CLASSIFICATIONS.includes(data.classification)) {
+    validateVersion(data.version, data.classification, baseFiles["CHANGELOG.md"] ?? "", errors);
   }
   if (!data.affected_records.length) errors.push("affected_records must list at least one political record.");
   for (const item of data.affected_records) {
@@ -404,11 +654,15 @@ export function validateRecord({ recordPath, source, baseFiles, proposedFiles, c
   const evidence = evidenceItems(document.sections["Supporting evidence"]);
   if (!evidence.length) errors.push("Supporting evidence must include at least one public HTTPS Markdown link with an explanation.");
   const linkCount = [...document.sections["Supporting evidence"].matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].length;
-  if (linkCount !== evidence.length) errors.push("Every supporting-evidence link must use HTTPS and include explanatory text.");
+  if (linkCount !== evidence.length || evidence.some((item) => !isPublicHttpsUrl(item.href))) {
+    errors.push("Every supporting-evidence link must use a genuinely public HTTPS URL and include explanatory text.");
+  }
 
-  const implementation = normalizeMarkdown(document.sections["Public implementation"]);
+  const implementationPaths = new Set(
+    [...document.sections["Public implementation"].matchAll(/`([^`\n]+)`/g)].map((match) => match[1]),
+  );
   for (const item of [...data.affected_website_pages, ...data.affected_public_artifacts]) {
-    if (!implementation.includes(normalizeMarkdown(item))) errors.push(`Public implementation does not identify ${item}.`);
+    if (!implementationPaths.has(item)) errors.push(`Public implementation does not identify ${item} as an exact path token.`);
   }
   if (![...data.affected_website_pages, ...data.affected_public_artifacts].length && !/no public (?:website page|artifact|implementation)/i.test(document.sections["Public implementation"])) {
     errors.push("Public implementation must explicitly state when no public page or artifact change is required.");
@@ -420,23 +674,68 @@ export function validateRecord({ recordPath, source, baseFiles, proposedFiles, c
   return errors;
 }
 
-export function validateChangeSet({ baseFiles, proposedFiles, changes }) {
+export function validateChangeSet({
+  baseFiles,
+  proposedFiles,
+  changes,
+  historicalRecordPaths = [],
+  historicalRecordIds = [],
+}) {
   const errors = [];
   const changedPaths = [...new Set(changes.map((change) => change.path))];
-  const changedTrackedPaths = changedPaths.filter(isTrackedPoliticalRecord);
+  const platformMarkdownPaths = changedPaths.filter((filePath) => /^platform\/.*\.md$/i.test(filePath));
+  const changedTrackedPaths = changedPaths.filter(
+    (filePath) => filePath === "CAMPAIGN-RULES.md" || platformMarkdownPaths.includes(filePath),
+  );
+  const nonconformingPoliticalPaths = changedTrackedPaths.filter((filePath) => !isTrackedPoliticalRecord(filePath));
+  const changedSemanticPaths = changedTrackedPaths.filter((filePath) => {
+    if (nonconformingPoliticalPaths.includes(filePath)) return true;
+    const change = changes.find((item) => item.path === filePath);
+    if (change?.status === "D") return true;
+    if (typeof proposedFiles[filePath] !== "string") {
+      errors.push(`Unable to read proposed political record: ${filePath}.`);
+      return true;
+    }
+    const delta = semanticDelta(baseFiles[filePath] ?? "", proposedFiles[filePath]);
+    if (delta.complexityError) {
+      errors.push(`${filePath}: ${delta.complexityError}`);
+      return true;
+    }
+    return delta.removed.length > 0 || delta.added.length > 0;
+  });
   const newRecords = changes.filter((change) => change.status === "A" && RECORD_FILE_PATTERN.test(change.path));
   const historicalRecordChanges = changes.filter((change) => change.status !== "A" && RECORD_FILE_PATTERN.test(change.path));
+  const deletedPoliticalRecords = changes.filter(
+    (change) => change.status === "D" && changedTrackedPaths.includes(change.path),
+  );
+  const validationMachineryChanges = changedPaths.filter((filePath) =>
+    VALIDATION_MACHINERY_PATTERNS.some((pattern) => pattern.test(filePath)),
+  );
 
+  if (nonconformingPoliticalPaths.length) {
+    errors.push(`Nonconforming political Markdown path(s) under platform/: ${nonconformingPoliticalPaths.join(", ")}.`);
+  }
+  if (deletedPoliticalRecords.length) {
+    errors.push(`Tracked political records cannot be deleted: ${deletedPoliticalRecords.map((item) => item.path).join(", ")}.`);
+  }
   if (historicalRecordChanges.length) {
     errors.push(`Historical change records are immutable: ${historicalRecordChanges.map((item) => item.path).join(", ")}.`);
   }
-  if (changedTrackedPaths.length && newRecords.length !== 1) {
+  if (changedTrackedPaths.length && validationMachineryChanges.length) {
+    errors.push(`Political changes cannot modify validation or governance machinery in the same change: ${validationMachineryChanges.join(", ")}.`);
+  }
+  for (const record of newRecords) {
+    const id = record.path.slice("changes/".length, -".md".length);
+    if (historicalRecordPaths.includes(record.path)) errors.push(`Previously used immutable record path cannot be reintroduced: ${record.path}.`);
+    if (historicalRecordIds.includes(id)) errors.push(`Previously used immutable record ID cannot be reused: ${id}.`);
+  }
+  if (changedSemanticPaths.length && newRecords.length !== 1) {
     errors.push(`A political change requires exactly one new immutable record; found ${newRecords.length}.`);
   }
-  if (!changedTrackedPaths.length && newRecords.length) {
+  if (!changedSemanticPaths.length && newRecords.length) {
     errors.push("A change record cannot be added without a tracked political-record change.");
   }
-  if (!changedTrackedPaths.length || newRecords.length !== 1) return errors;
+  if (!changedSemanticPaths.length || newRecords.length !== 1) return errors;
 
   const recordPath = newRecords[0].path;
   const source = proposedFiles[recordPath];
@@ -444,14 +743,19 @@ export function validateChangeSet({ baseFiles, proposedFiles, changes }) {
     errors.push(`Unable to read new change record: ${recordPath}.`);
     return errors;
   }
-  errors.push(...validateRecord({ recordPath, source, baseFiles, proposedFiles, changedTrackedPaths }));
+  errors.push(...validateRecord({ recordPath, source, baseFiles, proposedFiles, changedTrackedPaths: changedSemanticPaths }));
   if (!changedPaths.includes("CHANGELOG.md")) errors.push("A political change must update CHANGELOG.md.");
   else {
     try {
       const { data } = parseFrontMatter(source);
-      const changelog = proposedFiles["CHANGELOG.md"] ?? "";
-      if (!changelog.includes(data.version)) errors.push(`CHANGELOG.md does not include ${data.version}.`);
-      if (!changelog.includes(`changes/${data.id}.md`)) errors.push(`CHANGELOG.md does not link to changes/${data.id}.md.`);
+      const { title } = parseSections(parseFrontMatter(source).body);
+      validateChangelogEntry({
+        baseChangelog: baseFiles["CHANGELOG.md"] ?? "",
+        proposedChangelog: proposedFiles["CHANGELOG.md"] ?? "",
+        data,
+        title,
+        errors,
+      });
     } catch {
       // The record parser already reports the actionable error.
     }

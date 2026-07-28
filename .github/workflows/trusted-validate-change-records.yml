@@ -1,0 +1,70 @@
+name: Trusted public change-record validation
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  trusted-validate:
+    name: trusted-validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out trusted validator from the base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          path: trusted
+          persist-credentials: false
+
+      - name: Check out the untrusted proposed tree as data
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          path: proposed
+          persist-credentials: false
+
+      - name: Fetch the exact base commit into the proposed data checkout
+        working-directory: proposed
+        run: >-
+          git fetch --no-tags
+          "https://github.com/${{ github.repository }}.git"
+          "${{ github.event.pull_request.base.sha }}"
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: trusted/package-lock.json
+
+      - name: Install trusted tooling
+        working-directory: trusted
+        run: npm ci
+
+      - name: Run trusted contract tests
+        working-directory: trusted
+        run: npm test
+
+      - name: Validate proposed repository change with base-sourced code
+        working-directory: trusted
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: >-
+          node scripts/validate-change-records.mjs
+          --repo-root "${{ github.workspace }}/proposed"
+          --base "$BASE_SHA"
+          --head "$HEAD_SHA"
+
+      - name: Check proposed whitespace errors
+        working-directory: proposed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git diff --check "$BASE_SHA" "$HEAD_SHA"
