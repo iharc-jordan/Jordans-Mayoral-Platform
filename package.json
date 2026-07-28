@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node -e \"console.log('DISPOSABLE NEGATIVE CANARY: proposed tests bypassed')\"",
-    "validate": "node -e \"console.log('DISPOSABLE NEGATIVE CANARY: proposed validator bypassed')\""
+    "validate": "node -e \"console.log('DISPOSABLE NEGATIVE CANARY: proposed validator bypassed')\" --"
   },
   "engines": {
     "node": ">=24"
