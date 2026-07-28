@@ -117,17 +117,24 @@ export function validateRulesDocument(document) {
   const errors = [];
   if (!exactKeys(document, RULE_DOCUMENT_KEYS, "Campaign rules document", errors)) return errors;
   if (document.schemaVersion !== 1) errors.push("Campaign rules schemaVersion must be 1.");
-  if (!Array.isArray(document.rules) || document.rules.length !== 18) {
-    errors.push("Campaign rules must contain exactly 18 rules.");
+  if (!Array.isArray(document.rules) || document.rules.length === 0) {
+    errors.push("Campaign rules must contain a non-empty rules array.");
     return errors;
   }
+
+  const ids = document.rules.map((rule) => rule?.id);
+  const numbers = document.rules.map((rule) => rule?.number);
+  if (new Set(ids).size !== ids.length) errors.push("Campaign rule IDs must be unique.");
+  if (new Set(numbers).size !== numbers.length) errors.push("Campaign rule numbers must be unique.");
 
   for (const [index, rule] of document.rules.entries()) {
     const label = `Rule ${index + 1}`;
     if (!exactKeys(rule, RULE_KEYS, label, errors)) continue;
     const number = index + 1;
     if (rule.id !== `rule-${number}`) errors.push(`${label} id must be rule-${number}.`);
-    if (rule.number !== number) errors.push(`${label} number must be ${number}.`);
+    if (rule.number !== number) {
+      errors.push(`${label} number must be ${number}; rules must be ordered by contiguous ascending number beginning at 1.`);
+    }
     if (!nonEmptyString(rule.title)) errors.push(`${label} title must be a non-empty string.`);
     if (!nonEmptyString(rule.statement)) errors.push(`${label} statement must be a non-empty string.`);
     if (!new Set(["paragraph", "quote"]).has(rule.statementStyle)) {

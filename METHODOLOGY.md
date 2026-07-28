@@ -10,6 +10,8 @@ The source hierarchy for the original baseline was the deployed campaign website
 
 `data/campaign-rules.json` is the current authoritative rule source. Each rule has a stable `rule-N` ID, explicit number and order, exact title and body fields, and at least one explicit website surface. The campaign website validates and reads this merged branch-protected source directly; it does not maintain a separate copy of rule wording or infer route scope from Markdown.
 
+Campaign-rule surfaces come from `data/campaign-rules.json`. Existing policy-page routes continue to come from the campaign website’s typed policy bindings.
+
 `CAMPAIGN-RULES.md` is retained unchanged as the historical source at the structured migration boundary. The `v1.0.0` and `v1.1.0` tags continue to identify the two bundled historical releases.
 
 ## Change records

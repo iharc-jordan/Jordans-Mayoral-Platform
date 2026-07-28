@@ -97,18 +97,24 @@ function ruleChange(overrides = {}) {
   };
 }
 
-test("the canonical schema requires exactly 18 ordered rules with explicit surfaces", () => {
+test("the canonical schema requires non-empty, unique, contiguous ordered rules with explicit surfaces", () => {
   const valid = rulesDocument();
   assert.deepEqual(validateRulesDocument(valid), []);
 
   const invalid = clone(valid);
   invalid.rules[1].id = "rule-3";
+  invalid.rules[1].number = 3;
   invalid.rules[1].surfaces = [];
   invalid.rules[2].detail = [{ type: "ordered-list", items: [] }];
   const errors = validateRulesDocument(invalid).join("\n");
+  assert.match(errors, /IDs must be unique/);
+  assert.match(errors, /numbers must be unique/);
   assert.match(errors, /Rule 2 id must be rule-2/);
+  assert.match(errors, /contiguous ascending number beginning at 1/);
   assert.match(errors, /Rule 2 surfaces/);
   assert.match(errors, /Rule 3 detail item 1 items/);
+
+  assert.match(validateRulesDocument({ schemaVersion: 1, rules: [] }).join("\n"), /non-empty rules array/);
 });
 
 test("the canonical migration preserves all v1.1.0 rule wording, order, IDs, and surfaces", () => {
@@ -138,6 +144,29 @@ test("changed rule IDs come from deep comparison of complete rule objects", () =
 
 test("one exact JSON record validates a structured rule change", () => {
   assert.deepEqual(validateChangeSet(ruleChange().input), []);
+});
+
+test("Rule 19 can be appended through one ordinary political change without infrastructure edits", () => {
+  const base = rulesDocument();
+  const proposed = clone(base);
+  proposed.rules.push({
+    id: "rule-19",
+    number: 19,
+    title: "Fictional future rule",
+    statement: "A fictional future statement.",
+    statementStyle: "paragraph",
+    detail: [{ type: "paragraph", text: "A fictional future detail." }],
+    evidence: "Fictional future evidence.",
+    surfaces: ["/transparency"],
+  });
+  const recordPath = "changes/2099-01-01-fictional-change.json";
+  const changeRecord = record({ base, proposed, ruleIds: ["rule-19"] });
+
+  assert.deepEqual(validateChangeSet({
+    baseFiles: { [rulesPath]: source(base) },
+    proposedFiles: { [rulesPath]: source(proposed), [recordPath]: source(changeRecord) },
+    changes: [{ status: "M", path: rulesPath }, { status: "A", path: recordPath }],
+  }), []);
 });
 
 test("rule IDs, previous and new objects, and surface union must be exact", () => {

@@ -21,9 +21,12 @@ Describe the proposed repository change in plain language.
 - [ ] No historical change record was edited or deleted.
 - [ ] Political data was not mixed with validator, workflow, schema, package or governance changes.
 
-## Website verification
+## Post-merge website verification
 
-- [ ] The merged structured source was checked on `/how-ill-govern` or `/transparency` as applicable.
+Complete after merge:
+
+- [ ] The campaign website loaded the merged structured source.
+- [ ] The affected public page shows the approved wording.
 - [ ] One desktop smoke check passed.
 - [ ] One mobile smoke check passed.
 
