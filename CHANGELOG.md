@@ -1,8 +1,8 @@
-# Changelog
+# Bundled release history
 
-Material changes to the public platform and campaign commitments are indexed here. The authoritative explanation for each later change is its immutable `changes/*.md` record; the Git diff proves the textual change.
+This file preserves the historical `v1.0.0` and `v1.1.0` bundled platform releases. Routine future changes are identified directly by their permanent `changes/*.json` record, date and merge commit; they do not require a semantic-version release or another entry here.
 
-Future changes are classified as:
+Structured change records use these classifications:
 
 - Clarification
 - Evidence update
@@ -13,7 +13,7 @@ Future changes are classified as:
 - Policy withdrawal
 - Administrative correction
 
-Future entries contain only the version, date, title, classification, exact affected record names, a relative link to the immutable change record, and a release or commit reference when one is available through the normal release workflow. They do not duplicate the full change explanation or require a commit to contain its own final SHA.
+Jordan may add a later bundled release deliberately. A routine change record does not contain its own final commit SHA; the public tracker derives that identity from Git history.
 
 ## [v1.1.0] - 2026-07-28
 

@@ -2,51 +2,35 @@
 
 Describe the proposed repository change in plain language.
 
-## Immutable change record
+## Public source scope
 
-Link the new authoritative `changes/*.md` record. Infrastructure-only pull requests may write `Not applicable: no political record changed`.
+- Changed rule IDs:
+- Changed policy IDs:
+- Affected website surfaces:
+- Structured change record, or `Not applicable: infrastructure-only`:
 
-## Public records affected
+## Exact change
 
-List every exact changed `CAMPAIGN-RULES.md` or `platform/*.md` path. Write `None` only for an infrastructure-only pull request.
+- [ ] One coherent political change is included.
+- [ ] `affectedRuleIds` exactly matches the changed structured rule IDs.
+- [ ] `affectedPolicyIds` exactly matches the changed policy files.
+- [ ] `previousValues` and `newValues` exactly match the base and proposed rule objects.
+- [ ] `affectedSurfaces` exactly matches the changed rules.
+- [ ] `whatDidNotChange` identifies the unaffected commitments.
+- [ ] Supporting links are public HTTPS URLs.
+- [ ] No historical change record was edited or deleted.
+- [ ] Political data was not mixed with validator, workflow, schema, package or governance changes.
 
-If `CAMPAIGN-RULES.md` changes, list the exact `affected_rule_sections` IDs (`rule-1` through `rule-18`) declared by the immutable record. These must equal the validator-derived semantic delta.
+## Post-merge website verification
 
-## Website pages and public artifacts affected
+Complete after merge:
 
-List every exact public route and document that requires separate review. This repository does not publish website body copy automatically.
-
-## Classification and commitment effect
-
-- Classification:
-- Effect on the commitment:
-
-## Immutable-record completeness
-
-- [ ] The record contains the exact previous wording, or `Not applicable: new commitment` for a genuine addition.
-- [ ] The record contains the exact new wording, or `Not applicable: commitment withdrawn` for a genuine withdrawal.
-- [ ] The record explains why the change is being made.
-- [ ] Every supporting-evidence link is public HTTPS and explains what it supports.
-- [ ] The record specifically states **What did not change**.
-- [ ] The record identifies every public implementation route or artifact requiring separate review.
-
-## Version and changelog
-
-- [ ] The version follows the documented semantic-version rules.
-- [ ] `CHANGELOG.md` contains a concise entry linking the immutable record.
-- [ ] A release or commit reference will be added through the normal release workflow when available; this commit does not attempt to contain its own final SHA.
-
-## Scope and public-information confirmation
-
-- [ ] No unrelated commitment changed.
-- [ ] No campaign rule or platform record outside the paths listed above changed.
-- [ ] For `CAMPAIGN-RULES.md`, the declared numbered rule sections exactly match the semantic delta; website-route declarations were not treated as authority.
-- [ ] No private information, donor personal information, credentials, internal strategy, opposition research or legal-case information is included.
-- [ ] Website copy, if required, will change only through a separate reviewed website pull request.
+- [ ] The campaign website loaded the merged structured source.
+- [ ] The affected public page shows the approved wording.
+- [ ] One desktop smoke check passed.
+- [ ] One mobile smoke check passed.
 
 ## Validation commands and results
-
-Paste each command that actually ran and its exact result.
 
 ```text
 npm test

@@ -6,51 +6,32 @@ Public tracking began at **2026-07-24T09:00:00-04:00** in America/Toronto, which
 
 > Policies should improve as evidence and community feedback come in. The problem is not changing. The problem is pretending nothing changed.
 
-Policy can evolve. Evidence can improve. Community feedback can expose a better approach. Changing a policy is not inherently improper. Material changes made after public tracking began are documented through immutable repository change records, visible pull requests, the changelog and Git history.
+## Current public sources
 
-This first commit records the campaign's public position immediately before tracking began. It does not claim to reconstruct every website edit or public statement made before this repository existed.
+- [`data/campaign-rules.json`](data/campaign-rules.json) is authoritative for the 18 current campaign rules, their stable IDs, order, exact public wording and website surfaces.
+- [`platform/`](platform/README.md) contains the released platform policies and policy packages.
+- [`changes/`](changes) contains permanent public change records. Historical records are Markdown; new records are JSON.
+- [`CHANGELOG.md`](CHANGELOG.md) preserves the published `v1.0.0` and `v1.1.0` release history.
+- [`CAMPAIGN-RULES.md`](CAMPAIGN-RULES.md) is the unchanged pre-structured migration source preserved for public history. Future rule changes edit only the JSON source.
 
-## What is included
+This repository began with the campaign's public position immediately before tracking started. It does not claim to reconstruct every earlier website edit or public statement.
 
-- Released platform policies and tightly connected policy packages
-- Public campaign rules and governing commitments
-- Public financial, transparency, privacy and accountability commitments
-- Public source links and available publication metadata
-- A visible process for corrections, clarifications, revisions and withdrawals
+## Future changes
 
-See [the platform index](platform/README.md), [campaign rules](CAMPAIGN-RULES.md), [methodology](METHODOLOGY.md) and [changelog](CHANGELOG.md).
+A campaign-rule change uses one protected pull request:
 
-## How future changes work
+1. Edit one or more rules by stable ID in `data/campaign-rules.json`.
+2. Add one `changes/YYYY-MM-DD-slug.json` record.
+3. Run `npm test` and `npm run validate -- --base BASE_SHA --head HEAD_SHA`.
+4. Merge through ordinary branch protection and review.
+5. Confirm the campaign website loaded the merged structured source on one desktop and one mobile viewport.
 
-Each formal public change must add exactly one URL-safe `changes/*.md` record in the same pull request as the affected campaign-rule or platform files. The Git diff proves what text changed. The immutable change record explains why it changed, how it is classified, what it affects, and what did not change. The merged pull request supplies supplementary review context; its editable description is not the authoritative explanation.
+The change record identifies the changed rule or policy IDs and surfaces, explains the change and reason, includes exact previous and new rule objects, states what did not change, and links supporting public evidence. It does not contain its own final commit SHA.
 
-The record uses validated YAML front matter and these Markdown sections:
+Existing `platform/*.md` policies use the same one-record workflow, with a simple exact changed-file scope check. The validator does not infer prose meaning.
 
-- `What changed`
-- `Why it changed`
-- `Previous wording`
-- `New wording`
-- `Effect on the commitment`
-- `What did not change`
-- `Supporting evidence`
-- `Public implementation`
-
-New commitments use `Not applicable: new commitment` instead of invented previous wording. Withdrawals use `Not applicable: commitment withdrawn` instead of invented new wording. Evidence links must be public HTTPS links and state what each source supports. A single conceptual change may cover multiple records only when the immutable record declares the exact complete scope.
-
-When `CAMPAIGN-RULES.md` changes, its numbered H2 headings provide stable section identifiers: Rule 1 is `rule-1` through Rule 18 as `rule-18`. The immutable record must add `affected_rule_sections` as a YAML list containing exactly the sections whose political semantics changed. The validator derives that list independently from the predecessor and proposed files. Website page declarations remain review context and do not authorize route scope.
-
-Run `npm test` and `npm run validate -- --base BASE_SHA --head HEAD_SHA` before review. Validation fails closed when a political record lacks exactly one new record, scope or wording cannot be verified, a record is malformed, or an existing historical record is edited or deleted.
-
-Retired or withdrawn commitments will remain available in Git history and will be marked rather than silently deleted.
-
-Missing, malformed, ambiguous or mismatched records do not erase repository activity. The public campaign website must display the underlying tracked commit as an `Unclassified repository change` without inventing the missing explanation.
-
-Repository change records identify voter-facing implementation work, but they do not automatically rewrite campaign website policy bodies. Website copy changes require a separate reviewed pull request in `iharc-jordan/jordan-civic-site`.
-
-See [the methodology](METHODOLOGY.md) for classification and version rules and [repository settings](REPOSITORY-SETTINGS.md) for the manual protections expected on `main`.
+Historical change records are never edited or deleted. Git history, the stable change ID, its date and the merge commit provide the routine public identity. A semantic-version release is optional and reserved for a deliberately bundled platform release.
 
 ## Reuse and attribution
 
-The campaign wants useful ideas to travel. The platform and campaign-record text in this repository is licensed under the [Creative Commons Attribution 4.0 International License](LICENSE).
-
-Other candidates, campaigns, residents and organizations may copy, share and adapt this material, including for their own platforms, provided they give appropriate credit, link to the licence and indicate what they changed. Reuse does not imply endorsement by Jordan Stevenson or the campaign.
+The platform and campaign-record text in this repository is licensed under the [Creative Commons Attribution 4.0 International License](LICENSE). Other candidates, campaigns, residents and organizations may copy, share and adapt it with appropriate credit, a licence link and a clear indication of what they changed. Reuse does not imply endorsement by Jordan Stevenson or the campaign.

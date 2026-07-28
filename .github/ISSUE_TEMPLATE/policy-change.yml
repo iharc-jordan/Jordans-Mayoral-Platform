@@ -20,8 +20,8 @@ body:
   - type: input
     id: policy
     attributes:
-      label: Policy or campaign rule
-      description: Name the policy file, campaign rule or public page.
+      label: Policy ID or campaign-rule stable ID
+      description: Name the policy or use the exact rule-N ID from data/campaign-rules.json.
     validations:
       required: true
 
@@ -72,8 +72,8 @@ body:
   - type: input
     id: website_pages
     attributes:
-      label: Public website pages affected
-      description: List any campaign pages that should be checked.
+      label: Public website surfaces affected
+      description: List the exact surfaces declared by the affected structured rules.
 
   - type: checkboxes
     id: public_only
