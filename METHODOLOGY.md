@@ -94,6 +94,8 @@ Validation compares the predecessor and proposed repository states rather than o
 
 Malformed records, undocumented direct edits, mismatched scope and ambiguous associations fail validation. If such a change nevertheless reaches the repository through an exceptional administrative bypass, the public website must keep the tracked commit visible as an `Unclassified repository change`. It must not hide the change or invent political meaning.
 
+For the aggregated `CAMPAIGN-RULES.md` record, numbered H2 headings define stable identifiers `rule-1` through `rule-18`. A change record affecting that file must declare `affected_rule_sections` and the declaration must exactly equal the independently derived predecessor-to-proposed semantic delta. Omitted changed sections, declared unchanged sections, duplicate or invalid identifiers, and semantic changes outside numbered rules fail closed. `affected_website_pages` remains an untrusted publication-review declaration; the website derives authorized route scope from its own typed binding of verified section IDs.
+
 ## Retired or withdrawn policies
 
 A retired or withdrawn policy will not be erased. Its file will be retained, its status will be changed, the withdrawal or replacement will be explained and the prior versions will remain available through Git history.
