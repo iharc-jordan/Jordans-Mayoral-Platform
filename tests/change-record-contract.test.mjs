@@ -210,6 +210,174 @@ test("a fictional semantic delta outside numbered campaign rules fails closed", 
   );
 });
 
+test("a blank-line-terminated raw HTML block does not hide the following numbered rule", () => {
+  const base = `# Fictional Campaign Rules
+
+## 2. Fictional ordinary rule
+
+<div>
+Unclosed fictional markup.
+
+## 14. Fictional source rule
+
+Old fictional Rule 14 wording.
+`;
+  const proposed = base.replace("Old fictional Rule 14 wording.", "New fictional Rule 14 wording.");
+  assert.deepEqual(changedCampaignRuleSections(base, proposed), { changed: ["rule-14"], errors: [] });
+
+  let record = fixtureRecord.replace(
+    '  - "platform/fictional-civic-lanterns.md"',
+    '  - "CAMPAIGN-RULES.md"\naffected_rule_sections:\n  - "rule-2"',
+  );
+  record = replaceSection(record, "Previous wording", "- Old fictional Rule 14 wording.");
+  record = replaceSection(record, "New wording", "- New fictional Rule 14 wording.");
+  const changelog = fixtureChangelog.replace(
+    "Affected records: `platform/fictional-civic-lanterns.md`",
+    "Affected records: `CAMPAIGN-RULES.md`",
+  );
+  const result = validateChangeSet({
+    baseFiles: { "CAMPAIGN-RULES.md": base, "CHANGELOG.md": baseChangelog },
+    proposedFiles: { "CAMPAIGN-RULES.md": proposed, [recordPath]: record, "CHANGELOG.md": changelog },
+    changes: [
+      { status: "M", path: "CAMPAIGN-RULES.md" },
+      { status: "A", path: recordPath },
+      { status: "M", path: "CHANGELOG.md" },
+    ],
+  });
+  assert.match(result.join("\n"), /omits changed section.*rule-14/i);
+});
+
+test("a Setext H1 ends the preceding numbered rule section", () => {
+  const base = `# Fictional Campaign Rules
+
+## 2. Fictional ordinary rule
+
+Old fictional Rule 2 wording.
+
+Fictional appendix
+==================
+
+Old fictional appendix wording.
+`;
+  const proposed = base.replace("Old fictional appendix wording.", "New fictional appendix wording.");
+  assert.match(
+    changedCampaignRuleSections(base, proposed).errors.join("\n"),
+    /outside numbered rule sections/i,
+  );
+
+  let record = fixtureRecord.replace(
+    '  - "platform/fictional-civic-lanterns.md"',
+    '  - "CAMPAIGN-RULES.md"\naffected_rule_sections:\n  - "rule-2"',
+  );
+  record = replaceSection(record, "Previous wording", "- Old fictional appendix wording.");
+  record = replaceSection(record, "New wording", "- New fictional appendix wording.");
+  const changelog = fixtureChangelog.replace(
+    "Affected records: `platform/fictional-civic-lanterns.md`",
+    "Affected records: `CAMPAIGN-RULES.md`",
+  );
+  const result = validateChangeSet({
+    baseFiles: { "CAMPAIGN-RULES.md": base, "CHANGELOG.md": baseChangelog },
+    proposedFiles: { "CAMPAIGN-RULES.md": proposed, [recordPath]: record, "CHANGELOG.md": changelog },
+    changes: [
+      { status: "M", path: "CAMPAIGN-RULES.md" },
+      { status: "A", path: recordPath },
+      { status: "M", path: "CHANGELOG.md" },
+    ],
+  });
+  assert.match(result.join("\n"), /outside numbered rule sections/i);
+});
+
+test("all rendered Setext and HTML H1/H2 boundaries fail closed in full validation", () => {
+  const boundaries = [
+    { label: "Setext H2", heading: "Fictional appendix\n------------------" },
+    { label: "multiline Setext H1", heading: "Old fictional appendix heading\nSecond heading line\n=============================" },
+    { label: "HTML H2", heading: "<h2>Fictional appendix</h2>" },
+    { label: "partial HTML H2", heading: "<h2\nclass=\"fictional\">\nFictional appendix\n</h2>" },
+  ];
+  for (const { label, heading } of boundaries) {
+    const base = `# Fictional Campaign Rules
+
+## 2. Fictional ordinary rule
+
+Old fictional Rule 2 wording.
+
+${heading}
+
+Old fictional appendix wording.
+`;
+    const proposed = label === "multiline Setext H1"
+      ? base.replace("Old fictional appendix heading", "New fictional appendix heading")
+      : base.replace("Old fictional appendix wording.", "New fictional appendix wording.");
+    let record = fixtureRecord.replace(
+      '  - "platform/fictional-civic-lanterns.md"',
+      '  - "CAMPAIGN-RULES.md"\naffected_rule_sections:\n  - "rule-2"',
+    );
+    record = replaceSection(
+      record,
+      "Previous wording",
+      label === "multiline Setext H1" ? "- Old fictional appendix heading" : "- Old fictional appendix wording.",
+    );
+    record = replaceSection(
+      record,
+      "New wording",
+      label === "multiline Setext H1" ? "- New fictional appendix heading" : "- New fictional appendix wording.",
+    );
+    const changelog = fixtureChangelog.replace(
+      "Affected records: `platform/fictional-civic-lanterns.md`",
+      "Affected records: `CAMPAIGN-RULES.md`",
+    );
+    const result = validateChangeSet({
+      baseFiles: { "CAMPAIGN-RULES.md": base, "CHANGELOG.md": baseChangelog },
+      proposedFiles: { "CAMPAIGN-RULES.md": proposed, [recordPath]: record, "CHANGELOG.md": changelog },
+      changes: [
+        { status: "M", path: "CAMPAIGN-RULES.md" },
+        { status: "A", path: recordPath },
+        { status: "M", path: "CHANGELOG.md" },
+      ],
+    });
+    assert.match(result.join("\n"), /outside numbered rule sections/i, label);
+  }
+});
+
+test("empty and rendered H1 boundaries end the preceding numbered rule section", () => {
+  for (const heading of ["#", "<h1>Fictional appendix</h1>", "<h2>Fictional appendix</h2>"]) {
+    const base = `# Fictional Campaign Rules
+
+## 2. Fictional ordinary rule
+
+Old fictional Rule 2 wording.
+
+${heading}
+
+Old fictional appendix wording.
+`;
+    const proposed = base.replace("Old fictional appendix wording.", "New fictional appendix wording.");
+    assert.match(
+      changedCampaignRuleSections(base, proposed).errors.join("\n"),
+      /outside numbered rule sections/i,
+      heading,
+    );
+  }
+});
+
+test("entity-encoded public routes cannot bypass exact path declarations", () => {
+  const record = replaceSection(
+    fixtureRecord,
+    "Public implementation",
+    "The rendered route &#47;undeclared-fictional-route must be separately reviewed.",
+  );
+  assert.match(errors({ record }).join("\n"), /Public implementation paths must use exact rendered code tokens/i);
+});
+
+test("named HTML entities cannot disguise the canonical campaign domain", () => {
+  const record = replaceSection(
+    fixtureRecord,
+    "Public implementation",
+    "See https://jordanformayor&period;ca before the separately reviewed page is published.",
+  );
+  assert.match(errors({ record }).join("\n"), /Public implementation paths must use exact rendered code tokens/i);
+});
+
 test("full validation assigns fenced, indented, and HTML-block deltas to their numbered rule", () => {
   const containers = [
     {

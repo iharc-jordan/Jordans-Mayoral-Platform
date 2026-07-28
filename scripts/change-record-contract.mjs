@@ -173,8 +173,9 @@ export function renderedMarkdown(source) {
   const visible = [];
   let fence = null;
   let htmlBlock = null;
-  const htmlBlockStart = /^\s{0,3}<(address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul)(?:\s|>|\/)/i;
+  const htmlBlockStart = /^\s{0,3}<(address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul)(?:\s|>|\/|$)/i;
   for (const line of withoutComments.replace(/\r\n?/g, "\n").split("\n")) {
+    if (htmlBlock && !line.trim()) htmlBlock = null;
     const marker = line.match(/^\s{0,3}(`{3,}|~{3,})/);
     if (marker) {
       const character = marker[1][0];
@@ -340,17 +341,32 @@ function campaignRuleSections(source) {
   let fence = null;
   let htmlBlock = null;
   let visibleHeadingCount = 0;
-  const htmlBlockStart = /^\s{0,3}<(address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul)(?:\s|>|\/)/i;
-  for (const line of normalized.split("\n")) {
+  const htmlBlockStart = /^\s{0,3}<(address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul)(?:\s|>|\/|$)/i;
+  const lines = normalized.split("\n");
+  for (const line of lines) {
+    if (htmlBlock && !line.trim()) htmlBlock = null;
     const marker = line.match(/^\s{0,3}(`{3,}|~{3,})/);
     const hidden = Boolean(fence || htmlBlock || /^(?: {4}|\t)/.test(line));
-    const heading = !hidden && !marker ? line.match(/^##\s+(.+)$/) : null;
+    const setextBoundary = !hidden && !marker && /^ {0,3}(?:=+|-+)\s*$/.test(line);
+    if (setextBoundary) {
+      const active = current ? sections.get(current) : unscoped;
+      let start = active.length;
+      while (start && active[start - 1].trim()) start -= 1;
+      if (start < active.length && !/^\s{0,3}#{1,6}(?:\s|$)/.test(active[start])) {
+        unscoped.push(...active.splice(start), line);
+        current = null;
+        continue;
+      }
+    }
+    const htmlHeading = !fence && !htmlBlock && /^\s{0,3}<h[12](?:\s|>|\/|$)/i.test(line);
+    if (htmlHeading) current = null;
+    const heading = !hidden && !marker ? line.match(/^(#{1,2})(?:[ \t]+(.*))?[ \t]*$/) : null;
     if (heading) {
       visibleHeadingCount += 1;
       if (visibleHeadingCount > MAX_SEMANTIC_BLOCKS) {
         throw new Error(`Campaign-rule section parsing exceeds the explicit limit of ${MAX_SEMANTIC_BLOCKS} headings.`);
       }
-      const numbered = heading[1].match(/^([1-9]|1[0-8])\.\s+.+$/);
+      const numbered = heading[1] === "##" && heading[2].match(/^([1-9]|1[0-8])\.\s+.+$/);
       if (numbered) {
         const id = `rule-${numbered[1]}`;
         if (sections.has(id)) throw new Error(`Duplicate campaign-rule section: ${id}.`);
@@ -770,8 +786,17 @@ export function validateRecord({ recordPath, source, baseFiles, proposedFiles, c
   }
 
   const declaredPublicPaths = [...data.affected_website_pages, ...data.affected_public_artifacts];
+  const hasHtmlEntity = /&(?:#[0-9]+|#x[0-9a-f]+|[a-z][a-z0-9]+);/i.test(document.sections["Public implementation"]);
+  const renderedImplementation = document.sections["Public implementation"]
+    .replace(/&#(?:x([0-9a-f]+)|(\d+));|&sol;/gi, (match, hex, decimal) => {
+      if (match.toLowerCase() === "&sol;") return "/";
+      const codePoint = Number.parseInt(hex ?? decimal, hex ? 16 : 10);
+      return Number.isSafeInteger(codePoint) && codePoint <= 0x10ffff
+        ? String.fromCodePoint(codePoint)
+        : match;
+    });
   const implementationPaths = new Set(
-    [...document.sections["Public implementation"].matchAll(/`([^`\n]+)`/g)]
+    [...renderedImplementation.matchAll(/`([^`\n]+)`/g)]
       .map((match) => match[1])
       .filter((item) => item.startsWith("/")),
   );
@@ -781,10 +806,12 @@ export function validateRecord({ recordPath, source, baseFiles, proposedFiles, c
   for (const item of implementationPaths) {
     if (!declaredPublicPaths.includes(item)) errors.push(`Public implementation claims undeclared public path: ${item}.`);
   }
-  const implementationProse = document.sections["Public implementation"].replace(/`[^`\n]+`/g, "");
+  const implementationProse = renderedImplementation.replace(/`[^`\n]+`/g, "");
   if (
+    hasHtmlEntity
+    ||
     /(?<![A-Za-z0-9/])\/(?!\/)(?:[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*)?/m.test(implementationProse)
-    || /(?:https?:)?\/\/(?:www\.)?jordanformayor\.ca(?:\/[^\s)`]*)?/i.test(document.sections["Public implementation"])
+    || /(?:https?:)?\/\/(?:www\.)?jordanformayor\.ca(?:\/[^\s)`]*)?/i.test(renderedImplementation)
   ) {
     errors.push("Public implementation paths must use exact rendered code tokens.");
   }
