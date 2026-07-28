@@ -445,6 +445,8 @@ test("the pull-request validator is base-sourced and treats the proposed tree on
     "utf8",
   );
   assert.match(workflow, /pull_request_target:/);
+  assert.match(workflow, /^\s{2}trusted-validate:\s*$/m);
+  assert.doesNotMatch(workflow, /^\s{2}validate:\s*$/m);
   assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
   assert.match(workflow, /path: trusted/);
   assert.match(workflow, /repository: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name \}\}/);
@@ -460,11 +462,13 @@ test("the pull-request validator is base-sourced and treats the proposed tree on
     "utf8",
   );
   assert.match(candidateWorkflow, /pull_request:/);
+  assert.match(candidateWorkflow, /^\s{2}validate:\s*$/m);
+  assert.doesNotMatch(candidateWorkflow, /^\s{2}trusted-validate:\s*$/m);
   assert.match(candidateWorkflow, /run: npm test/);
   assert.match(candidateWorkflow, /run: npm run validate/);
 
   const settings = fs.readFileSync(path.join(root, "REPOSITORY-SETTINGS.md"), "utf8");
-  assert.match(settings, /Trusted public change-record validation \/ validate/);
+  assert.match(settings, /Trusted public change-record validation \/ trusted-validate/);
   assert.match(settings, /Validate public change records \/ validate/);
   assert.match(settings, /base-sourced trusted check/);
 });
