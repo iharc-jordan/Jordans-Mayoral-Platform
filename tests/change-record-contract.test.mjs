@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -549,4 +551,66 @@ test("an immutable fictional record path and ID cannot be reintroduced", () => {
     historicalRecordIds: ["2099-01-01-fictional-civic-lanterns"],
   });
   assert.match(result.join("\n"), /previously used immutable record path|previously used immutable record id/i);
+});
+
+test("the CLI discovers a deleted immutable fictional record in Git history", () => {
+  const temporaryRepository = fs.mkdtempSync(path.join(os.tmpdir(), "platform-history-"));
+  const historicalPath = "changes/2099-01-01-fictional-history-record.md";
+  const historicalId = "2099-01-01-fictional-history-record";
+  const historicalSource = `---\nid: "${historicalId}"\n---\n# Fictional historical record\n`;
+  const git = (...args) => execFileSync("git", args, {
+    cwd: temporaryRepository,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+
+  try {
+    git("init");
+    git("config", "user.name", "Fictional Test Runner");
+    git("config", "user.email", "fictional-test@example.com");
+    git("config", "core.autocrlf", "false");
+    git("fetch", "--no-tags", root, BASELINE_COMMIT);
+    git("checkout", "-b", "synthetic-history", "FETCH_HEAD");
+
+    const absoluteRecordPath = path.join(temporaryRepository, ...historicalPath.split("/"));
+    fs.mkdirSync(path.dirname(absoluteRecordPath), { recursive: true });
+    fs.writeFileSync(absoluteRecordPath, historicalSource);
+    git("add", historicalPath);
+    git("commit", "-m", "Add fictional historical record");
+
+    fs.rmSync(absoluteRecordPath);
+    git("add", "--all");
+    git("commit", "-m", "Delete fictional historical record");
+    const base = git("rev-parse", "HEAD");
+
+    fs.writeFileSync(absoluteRecordPath, historicalSource);
+    git("add", historicalPath);
+    git("commit", "-m", "Attempt to reintroduce fictional historical record");
+    const head = git("rev-parse", "HEAD");
+
+    let validationOutput = "";
+    try {
+      execFileSync(
+        process.execPath,
+        [
+          path.join(root, "scripts", "validate-change-records.mjs"),
+          "--repo-root",
+          temporaryRepository,
+          "--base",
+          base,
+          "--head",
+          head,
+        ],
+        { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+      );
+      assert.fail("The CLI unexpectedly accepted a reintroduced immutable record.");
+    } catch (error) {
+      validationOutput = `${error.stdout ?? ""}\n${error.stderr ?? ""}`;
+    }
+
+    assert.match(validationOutput, new RegExp(`Previously used immutable record path cannot be reintroduced: ${historicalPath.replaceAll(".", "\\.")}`, "i"));
+    assert.match(validationOutput, new RegExp(`Previously used immutable record ID cannot be reused: ${historicalId}`, "i"));
+  } finally {
+    fs.rmSync(temporaryRepository, { recursive: true, force: true });
+  }
 });
