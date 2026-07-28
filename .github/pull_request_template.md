@@ -10,6 +10,8 @@ Link the new authoritative `changes/*.md` record. Infrastructure-only pull reque
 
 List every exact changed `CAMPAIGN-RULES.md` or `platform/*.md` path. Write `None` only for an infrastructure-only pull request.
 
+If `CAMPAIGN-RULES.md` changes, list the exact `affected_rule_sections` IDs (`rule-1` through `rule-18`) declared by the immutable record. These must equal the validator-derived semantic delta.
+
 ## Website pages and public artifacts affected
 
 List every exact public route and document that requires separate review. This repository does not publish website body copy automatically.
@@ -38,6 +40,7 @@ List every exact public route and document that requires separate review. This r
 
 - [ ] No unrelated commitment changed.
 - [ ] No campaign rule or platform record outside the paths listed above changed.
+- [ ] For `CAMPAIGN-RULES.md`, the declared numbered rule sections exactly match the semantic delta; website-route declarations were not treated as authority.
 - [ ] No private information, donor personal information, credentials, internal strategy, opposition research or legal-case information is included.
 - [ ] Website copy, if required, will change only through a separate reviewed website pull request.
 

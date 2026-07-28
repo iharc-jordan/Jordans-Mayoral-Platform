@@ -20,6 +20,7 @@ The public campaign website is a separate reviewed publication boundary. Reposit
 - Supporting evidence must use genuinely public HTTPS URLs. Never use credentials, localhost, loopback, link-local, private-network or malformed targets.
 - Keep public implementation routes and artifact paths exact; `/` is the campaign website root route.
 - Keep semantic comparison explicitly resource-bounded and fail closed before adversarial block counts or complexity can exhaust validation memory.
+- Treat each numbered `CAMPAIGN-RULES.md` H2 as the stable section ID `rule-N`. Every immutable record affecting that aggregated file must declare `affected_rule_sections`, and the validator must prove that list exactly equals the predecessor-to-proposed semantic delta. Never infer section scope from remote website-route declarations or fall back to authorizing every route associated with the file.
 
 ## Trusted validation and review
 

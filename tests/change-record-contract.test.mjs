@@ -10,6 +10,7 @@ import {
   CLASSIFICATIONS,
   NEW_COMMITMENT_MARKER,
   WITHDRAWAL_MARKER,
+  changedCampaignRuleSections,
   normalizeMarkdown,
   parseFrontMatter,
   semanticBlocks,
@@ -66,8 +67,217 @@ function replaceSection(record, heading, content) {
   return record.replace(pattern, `$1${content}\n`);
 }
 
+const fictionalCampaignRules = Object.freeze({
+  2: {
+    previous: "The fictional campaign will test one paper bridge before ordering imaginary materials.",
+    proposed: "The fictional campaign will test two paper bridges before ordering imaginary materials.",
+  },
+  14: {
+    previous: "The fictional campaign will not accept bundled wooden tokens.",
+    proposed: "The fictional campaign will not accept bundled wooden or clay tokens.",
+  },
+});
+
+function campaignRulesSource(changes = {}) {
+  return `# Fictional Campaign Rules
+
+## 2. Test fictional bridges
+
+${changes[2] ?? fictionalCampaignRules[2].previous}
+
+## 14. Reject fictional token bundles
+
+${changes[14] ?? fictionalCampaignRules[14].previous}
+
+## Public source references
+
+- https://example.com/fictional-rules
+`;
+}
+
+function campaignRuleChange({ changedRules = [2], declaredRules = changedRules, pages = ["/fictional-rules"] } = {}) {
+  const base = campaignRulesSource();
+  const proposed = campaignRulesSource(Object.fromEntries(
+    changedRules.map((number) => [number, fictionalCampaignRules[number].proposed]),
+  ));
+  let record = fixtureRecord.replace(
+    '  - "platform/fictional-civic-lanterns.md"',
+    declaredRules === null
+      ? '  - "CAMPAIGN-RULES.md"'
+      : `  - "CAMPAIGN-RULES.md"\naffected_rule_sections:\n${declaredRules.map((number) => `  - "rule-${number}"`).join("\n")}`,
+  );
+  record = record.replace(
+    'affected_website_pages:\n  - "/priorities/fictional-civic-lanterns"',
+    `affected_website_pages:\n${pages.map((page) => `  - "${page}"`).join("\n")}`,
+  );
+  record = replaceSection(
+    record,
+    "Previous wording",
+    changedRules.map((number) => `- ${fictionalCampaignRules[number].previous}`).join("\n"),
+  );
+  record = replaceSection(
+    record,
+    "New wording",
+    changedRules.map((number) => `- ${fictionalCampaignRules[number].proposed}`).join("\n"),
+  );
+  record = replaceSection(
+    record,
+    "Public implementation",
+    `${pages.map((page) => `The separately reviewed fictional page \`${page}\` must be checked.`).join("\n\n")}\n\nRepository Markdown does not publish those pages automatically.`,
+  );
+  const changelog = fixtureChangelog.replace(
+    "Affected records: `platform/fictional-civic-lanterns.md`",
+    "Affected records: `CAMPAIGN-RULES.md`",
+  );
+  return validateChangeSet({
+    baseFiles: { "CAMPAIGN-RULES.md": base, "CHANGELOG.md": baseChangelog },
+    proposedFiles: {
+      "CAMPAIGN-RULES.md": proposed,
+      [recordPath]: record,
+      "CHANGELOG.md": changelog,
+    },
+    changes: [
+      { status: "M", path: "CAMPAIGN-RULES.md" },
+      { status: "A", path: recordPath },
+      { status: "M", path: "CHANGELOG.md" },
+    ],
+  });
+}
+
 test("checked-in fictional clarification fixture is valid", () => {
   assert.deepEqual(errors(), []);
+});
+
+test("a fictional Rule 2-only delta requires only rule-2", () => {
+  assert.deepEqual(campaignRuleChange({ changedRules: [2], declaredRules: [2] }), []);
+});
+
+test("a fictional Rule 14-only delta requires only rule-14", () => {
+  assert.deepEqual(campaignRuleChange({ changedRules: [14], declaredRules: [14] }), []);
+});
+
+test("a fictional campaign-rule change cannot omit affected_rule_sections", () => {
+  assert.match(
+    campaignRuleChange({ changedRules: [14], declaredRules: null }).join("\n"),
+    /Missing required front matter field.*affected_rule_sections/i,
+  );
+});
+
+test("one fictional change can explicitly cover rules on both publication surfaces", () => {
+  assert.deepEqual(campaignRuleChange({ changedRules: [2, 14], declaredRules: [2, 14] }), []);
+});
+
+test("a fictional immutable record declaring the wrong rule section fails", () => {
+  const result = campaignRuleChange({ changedRules: [2], declaredRules: [14] }).join("\n");
+  assert.match(result, /omits changed section.*rule-2/i);
+  assert.match(result, /lists unchanged or incorrect section.*rule-14/i);
+});
+
+test("a fictional changed rule omitted from the immutable record fails", () => {
+  assert.match(
+    campaignRuleChange({ changedRules: [2, 14], declaredRules: [2] }).join("\n"),
+    /omits changed section.*rule-14/i,
+  );
+});
+
+test("a fictional declared rule with no semantic change fails", () => {
+  assert.match(
+    campaignRuleChange({ changedRules: [2], declaredRules: [2, 14] }).join("\n"),
+    /lists unchanged or incorrect section.*rule-14/i,
+  );
+});
+
+test("arbitrary or broadened website declarations cannot alter verified rule-section scope", () => {
+  const base = campaignRulesSource();
+  const proposed = campaignRulesSource({ 14: fictionalCampaignRules[14].proposed });
+  assert.deepEqual(changedCampaignRuleSections(base, proposed), { changed: ["rule-14"], errors: [] });
+  assert.deepEqual(
+    campaignRuleChange({
+      changedRules: [14],
+      declaredRules: [14],
+      pages: ["/fictional-rules", "/arbitrary-broadened-route"],
+    }),
+    [],
+  );
+});
+
+test("a fictional semantic delta outside numbered campaign rules fails closed", () => {
+  const base = campaignRulesSource();
+  const proposed = base.replace("# Fictional Campaign Rules", "# Broadened Fictional Campaign Rules");
+  assert.match(
+    changedCampaignRuleSections(base, proposed).errors.join("\n"),
+    /outside numbered rule sections/i,
+  );
+});
+
+test("full validation assigns fenced, indented, and HTML-block deltas to their numbered rule", () => {
+  const containers = [
+    {
+      label: "fenced",
+      previous: "```text\nold hidden-format Rule 14 wording\n```",
+      proposed: "```text\nnew hidden-format Rule 14 wording\n```",
+      previousClaim: "text old hidden-format Rule 14 wording",
+      proposedClaim: "text new hidden-format Rule 14 wording",
+    },
+    {
+      label: "indented",
+      previous: "    old hidden-format Rule 14 wording",
+      proposed: "    new hidden-format Rule 14 wording",
+      previousClaim: "old hidden-format Rule 14 wording",
+      proposedClaim: "new hidden-format Rule 14 wording",
+    },
+    {
+      label: "HTML",
+      previous: "<div>old hidden-format Rule 14 wording</div>",
+      proposed: "<div>new hidden-format Rule 14 wording</div>",
+      previousClaim: "<div>old hidden-format Rule 14 wording</div>",
+      proposedClaim: "<div>new hidden-format Rule 14 wording</div>",
+    },
+  ];
+
+  for (const container of containers) {
+    const base = `# Fictional Campaign Rules
+
+## 2. Fictional ordinary rule
+
+Old ordinary Rule 2 wording.
+
+## 14. Fictional hidden-format rule
+
+${container.previous}
+
+## Public source references
+
+- https://example.com/fictional-rules
+`;
+    const proposed = base
+      .replace("Old ordinary Rule 2 wording.", "New ordinary Rule 2 wording.")
+      .replace(container.previous, container.proposed);
+    let record = fixtureRecord.replace(
+      '  - "platform/fictional-civic-lanterns.md"',
+      '  - "CAMPAIGN-RULES.md"\naffected_rule_sections:\n  - "rule-2"',
+    );
+    record = replaceSection(record, "Previous wording", `- Old ordinary Rule 2 wording.\n- ${container.previousClaim}`);
+    record = replaceSection(record, "New wording", `- New ordinary Rule 2 wording.\n- ${container.proposedClaim}`);
+    const changelog = fixtureChangelog.replace(
+      "Affected records: `platform/fictional-civic-lanterns.md`",
+      "Affected records: `CAMPAIGN-RULES.md`",
+    );
+    const result = validateChangeSet({
+      baseFiles: { "CAMPAIGN-RULES.md": base, "CHANGELOG.md": baseChangelog },
+      proposedFiles: {
+        "CAMPAIGN-RULES.md": proposed,
+        [recordPath]: record,
+        "CHANGELOG.md": changelog,
+      },
+      changes: [
+        { status: "M", path: "CAMPAIGN-RULES.md" },
+        { status: "A", path: recordPath },
+        { status: "M", path: "CHANGELOG.md" },
+      ],
+    });
+    assert.match(result.join("\n"), /omits changed section.*rule-14/i, container.label);
+  }
 });
 
 test("all established classifications parse and their canonical effects validate", () => {
@@ -494,6 +704,35 @@ test("public implementation paths are exact tokens rather than substrings", () =
     "The separately reviewed fictional page `/priorities/fictional-civic-lanterns-longer`",
   );
   assert.match(errors({ record: collision }).join("\n"), /does not identify \/priorities\/fictional-civic-lanterns/i);
+});
+
+test("public implementation cannot claim an undeclared path token or prose route", () => {
+  const extraToken = fixtureRecord.replace(
+    "Repository Markdown does not publish that page automatically.",
+    "Also update `/how-ill-govern`. Repository Markdown does not publish that page automatically.",
+  );
+  assert.match(errors({ record: extraToken }).join("\n"), /undeclared public path.*how-ill-govern/i);
+
+  const proseRoute = fixtureRecord.replace(
+    "Repository Markdown does not publish that page automatically.",
+    "Also update /how-ill-govern. Repository Markdown does not publish that page automatically.",
+  );
+  assert.match(errors({ record: proseRoute }).join("\n"), /exact rendered code tokens/i);
+
+  for (const claim of [
+    "Also update:/how-ill-govern.",
+    "Also update https://jordanformayor.ca/how-ill-govern.",
+    "Also update http://jordanformayor.ca/how-ill-govern.",
+    "Also update //jordanformayor.ca/how-ill-govern.",
+    "Also update /.",
+    "Also update \"/\"."
+  ]) {
+    const broadened = fixtureRecord.replace(
+      "Repository Markdown does not publish that page automatically.",
+      `${claim} Repository Markdown does not publish that page automatically.`,
+    );
+    assert.match(errors({ record: broadened }).join("\n"), /exact rendered code tokens/i, claim);
+  }
 });
 
 test("the website root route is a valid exact public implementation path", () => {

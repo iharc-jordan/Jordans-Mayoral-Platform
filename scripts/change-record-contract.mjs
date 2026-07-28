@@ -45,6 +45,8 @@ export const REQUIRED_FIELDS = Object.freeze([
   "affected_public_artifacts",
 ]);
 
+export const OPTIONAL_FIELDS = Object.freeze(["affected_rule_sections"]);
+
 export const REQUIRED_SECTIONS = Object.freeze([
   "What changed",
   "Why it changed",
@@ -66,6 +68,7 @@ const ROUTE_PATTERN = /^(?:\/|\/(?!\/)(?:[a-z0-9][a-z0-9-]*)(?:\/[a-z0-9][a-z0-9
 const ARTIFACT_PATTERN = /^\/(?!\/)(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/;
 const RECORD_PATTERN = /^(?:CAMPAIGN-RULES\.md|platform\/[a-z0-9]+(?:-[a-z0-9]+)*\.md)$/;
 const RECORD_FILE_PATTERN = /^changes\/[^/]+\.md$/;
+const RULE_SECTION_PATTERN = /^rule-(?:[1-9]|1[0-8])$/;
 export const PLATFORM_DOCUMENTATION_ALLOWLIST = Object.freeze(["platform/README.md"]);
 export const ADMINISTRATIVE_FRONT_MATTER_ALLOWLIST = Object.freeze([]);
 export const MAX_SEMANTIC_BLOCKS = 512;
@@ -327,6 +330,113 @@ export function semanticDelta(previous, proposed) {
   return { removed, added };
 }
 
+function campaignRuleSections(source) {
+  const normalized = source
+    .replace(/\r\n?/g, "\n")
+    .replace(/<!--[^]*?-->/g, (comment) => comment.replace(/[^\n]/g, ""));
+  const sections = new Map();
+  const unscoped = [];
+  let current = null;
+  let fence = null;
+  let htmlBlock = null;
+  let visibleHeadingCount = 0;
+  const htmlBlockStart = /^\s{0,3}<(address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul)(?:\s|>|\/)/i;
+  for (const line of normalized.split("\n")) {
+    const marker = line.match(/^\s{0,3}(`{3,}|~{3,})/);
+    const hidden = Boolean(fence || htmlBlock || /^(?: {4}|\t)/.test(line));
+    const heading = !hidden && !marker ? line.match(/^##\s+(.+)$/) : null;
+    if (heading) {
+      visibleHeadingCount += 1;
+      if (visibleHeadingCount > MAX_SEMANTIC_BLOCKS) {
+        throw new Error(`Campaign-rule section parsing exceeds the explicit limit of ${MAX_SEMANTIC_BLOCKS} headings.`);
+      }
+      const numbered = heading[1].match(/^([1-9]|1[0-8])\.\s+.+$/);
+      if (numbered) {
+        const id = `rule-${numbered[1]}`;
+        if (sections.has(id)) throw new Error(`Duplicate campaign-rule section: ${id}.`);
+        current = id;
+        sections.set(id, []);
+      } else {
+        current = null;
+      }
+    }
+    (current ? sections.get(current) : unscoped).push(line);
+    if (marker) {
+      const character = marker[1][0];
+      if (!fence) fence = { character, length: marker[1].length };
+      else if (fence.character === character && marker[1].length >= fence.length) fence = null;
+    } else {
+      if (!fence && !htmlBlock) htmlBlock = line.match(htmlBlockStart)?.[1]?.toLowerCase() ?? null;
+      if (htmlBlock && new RegExp(`</${htmlBlock}\\s*>`, "i").test(line)) htmlBlock = null;
+    }
+  }
+  return {
+    sections: new Map([...sections].map(([id, lines]) => [id, lines.join("\n").trim()])),
+    unscoped: unscoped.join("\n")
+  };
+}
+
+export function changedCampaignRuleSections(previous, proposed) {
+  let before;
+  let after;
+  try {
+    before = campaignRuleSections(previous);
+    after = campaignRuleSections(proposed);
+  } catch (error) {
+    return { changed: [], errors: [error.message] };
+  }
+  const ids = [...new Set([...before.sections.keys(), ...after.sections.keys()])]
+    .sort((left, right) => Number(left.slice(5)) - Number(right.slice(5)));
+  const changed = [];
+  const errors = [];
+  for (const id of ids) {
+    const delta = semanticDelta(before.sections.get(id) ?? "", after.sections.get(id) ?? "");
+    if (delta.complexityError) errors.push(`${id}: ${delta.complexityError}`);
+    else if (delta.removed.length || delta.added.length) changed.push(id);
+  }
+  const unscopedDelta = semanticDelta(before.unscoped, after.unscoped);
+  if (unscopedDelta.complexityError) errors.push(`CAMPAIGN-RULES.md outside numbered rules: ${unscopedDelta.complexityError}`);
+  else if (unscopedDelta.removed.length || unscopedDelta.added.length) {
+    errors.push("CAMPAIGN-RULES.md has a semantic change outside numbered rule sections.");
+  }
+  return { changed, errors };
+}
+
+function validateCampaignRuleScope(data, baseFiles, proposedFiles, errors) {
+  const affectsCampaignRules = data.affected_records.includes("CAMPAIGN-RULES.md");
+  if (!affectsCampaignRules) {
+    if (Object.hasOwn(data, "affected_rule_sections")) {
+      errors.push("affected_rule_sections is allowed only when CAMPAIGN-RULES.md is affected.");
+    }
+    return;
+  }
+  if (!Object.hasOwn(data, "affected_rule_sections")) {
+    errors.push("Missing required front matter field for CAMPAIGN-RULES.md: affected_rule_sections.");
+    return;
+  }
+  if (!Array.isArray(data.affected_rule_sections)) {
+    errors.push("affected_rule_sections must be a YAML list.");
+    return;
+  }
+  const declared = data.affected_rule_sections;
+  if (!declared.length) errors.push("affected_rule_sections must list at least one numbered rule section.");
+  if (new Set(declared).size !== declared.length) errors.push("affected_rule_sections contains a duplicate section.");
+  for (const section of declared) {
+    if (typeof section !== "string" || !RULE_SECTION_PATTERN.test(section)) {
+      errors.push(`Invalid campaign-rule section identifier: ${section}.`);
+    }
+  }
+  const derived = changedCampaignRuleSections(
+    baseFiles["CAMPAIGN-RULES.md"] ?? "",
+    proposedFiles["CAMPAIGN-RULES.md"] ?? "",
+  );
+  errors.push(...derived.errors);
+  const omitted = derived.changed.filter((section) => !declared.includes(section));
+  const unchanged = declared.filter((section) => !derived.changed.includes(section));
+  if (omitted.length) errors.push(`affected_rule_sections omits changed section(s): ${omitted.join(", ")}.`);
+  if (unchanged.length) errors.push(`affected_rule_sections lists unchanged or incorrect section(s): ${unchanged.join(", ")}.`);
+}
+
 export function isTrackedPoliticalRecord(filePath) {
   return RECORD_PATTERN.test(filePath);
 }
@@ -570,7 +680,7 @@ export function validateRecord({ recordPath, source, baseFiles, proposedFiles, c
     if (!Object.hasOwn(data, field)) errors.push(`Missing required front matter field: ${field}.`);
   }
   for (const field of Object.keys(data)) {
-    if (!REQUIRED_FIELDS.includes(field)) errors.push(`Unexpected front matter field: ${field}.`);
+    if (![...REQUIRED_FIELDS, ...OPTIONAL_FIELDS].includes(field)) errors.push(`Unexpected front matter field: ${field}.`);
   }
   for (const section of REQUIRED_SECTIONS) {
     if (!document.sections[section]?.trim()) errors.push(`Missing or empty required section: ${section}.`);
@@ -617,6 +727,7 @@ export function validateRecord({ recordPath, source, baseFiles, proposedFiles, c
     }
   }
   validateExactScope(data.affected_records, changedTrackedPaths, errors);
+  validateCampaignRuleScope(data, baseFiles, proposedFiles, errors);
 
   const previous = document.sections["Previous wording"];
   const next = document.sections["New wording"];
@@ -658,13 +769,26 @@ export function validateRecord({ recordPath, source, baseFiles, proposedFiles, c
     errors.push("Every supporting-evidence link must use a genuinely public HTTPS URL and include explanatory text.");
   }
 
+  const declaredPublicPaths = [...data.affected_website_pages, ...data.affected_public_artifacts];
   const implementationPaths = new Set(
-    [...document.sections["Public implementation"].matchAll(/`([^`\n]+)`/g)].map((match) => match[1]),
+    [...document.sections["Public implementation"].matchAll(/`([^`\n]+)`/g)]
+      .map((match) => match[1])
+      .filter((item) => item.startsWith("/")),
   );
-  for (const item of [...data.affected_website_pages, ...data.affected_public_artifacts]) {
+  for (const item of declaredPublicPaths) {
     if (!implementationPaths.has(item)) errors.push(`Public implementation does not identify ${item} as an exact path token.`);
   }
-  if (![...data.affected_website_pages, ...data.affected_public_artifacts].length && !/no public (?:website page|artifact|implementation)/i.test(document.sections["Public implementation"])) {
+  for (const item of implementationPaths) {
+    if (!declaredPublicPaths.includes(item)) errors.push(`Public implementation claims undeclared public path: ${item}.`);
+  }
+  const implementationProse = document.sections["Public implementation"].replace(/`[^`\n]+`/g, "");
+  if (
+    /(?<![A-Za-z0-9/])\/(?!\/)(?:[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*)?/m.test(implementationProse)
+    || /(?:https?:)?\/\/(?:www\.)?jordanformayor\.ca(?:\/[^\s)`]*)?/i.test(document.sections["Public implementation"])
+  ) {
+    errors.push("Public implementation paths must use exact rendered code tokens.");
+  }
+  if (!declaredPublicPaths.length && !/no public (?:website page|artifact|implementation)/i.test(document.sections["Public implementation"])) {
     errors.push("Public implementation must explicitly state when no public page or artifact change is required.");
   }
   if (/^everything else\.?$/i.test(document.sections["What did not change"].trim())) {
