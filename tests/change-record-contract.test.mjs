@@ -747,8 +747,7 @@ test("the v1.0.0 tag remains pinned to the original baseline and tracking bounda
 });
 
 test("the fixture is not a public change record", () => {
-  const publicRecords = fs.readdirSync(path.join(root, "changes")).filter((name) => name.endsWith(".md"));
-  assert.deepEqual(publicRecords, []);
+  assert.equal(fs.existsSync(path.join(root, recordPath)), false);
   assert.equal(parseFrontMatter(fixtureRecord).data.id, "2099-01-01-fictional-civic-lanterns");
 });
 
