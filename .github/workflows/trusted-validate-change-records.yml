@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   trusted-validate:
+    name: trusted-validate
     runs-on: ubuntu-latest
     steps:
       - name: Check out trusted validator from the base branch

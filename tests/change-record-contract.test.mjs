@@ -446,6 +446,7 @@ test("the pull-request validator is base-sourced and treats the proposed tree on
   );
   assert.match(workflow, /pull_request_target:/);
   assert.match(workflow, /^\s{2}trusted-validate:\s*$/m);
+  assert.match(workflow, /^\s{4}name:\s+trusted-validate\s*$/m);
   assert.doesNotMatch(workflow, /^\s{2}validate:\s*$/m);
   assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
   assert.match(workflow, /path: trusted/);
