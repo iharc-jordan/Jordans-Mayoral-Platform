@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { normalizeRepoPath, validateChangeSet } from "./change-record-contract.mjs";
+import { BASELINE_COMMIT, normalizeRepoPath, validateChangeSet } from "./change-record-contract.mjs";
 
 function argument(name) {
   const index = process.argv.indexOf(name);
@@ -18,7 +18,7 @@ function git(args, options = {}) {
   }).trimEnd();
 }
 
-const root = git(["rev-parse", "--show-toplevel"]);
+const root = path.resolve(argument("--repo-root") ?? git(["rev-parse", "--show-toplevel"]));
 const requestedBase = argument("--base") ?? process.env.GITHUB_BASE_SHA;
 const requestedHead = argument("--head") ?? process.env.GITHUB_SHA;
 let base = requestedBase;
@@ -76,10 +76,20 @@ for (const filePath of relevantPaths) {
   }
 }
 
-const errors = validateChangeSet({ baseFiles, proposedFiles, changes });
+let historicalRecordPaths = [];
+git(["rev-parse", `${BASELINE_COMMIT}^{commit}`], { cwd: root });
+git(["merge-base", "--is-ancestor", BASELINE_COMMIT, base], { cwd: root });
+const history = git(["log", base, "--format=", "--name-only", "--", "changes"], { cwd: root });
+historicalRecordPaths = [...new Set(history.split("\n").map(normalizeRepoPath).filter((item) => RECORD_PATH(item)))];
+const historicalRecordIds = historicalRecordPaths.map((item) => path.posix.basename(item, ".md"));
+const errors = validateChangeSet({ baseFiles, proposedFiles, changes, historicalRecordPaths, historicalRecordIds });
 if (errors.length) {
   console.error("Change-record validation failed:");
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
 console.log(`Change-record validation passed (${base.slice(0, 12)} -> ${head?.slice(0, 12) ?? "working tree"}).`);
+
+function RECORD_PATH(value) {
+  return /^changes\/[^/]+\.md$/.test(value);
+}
