@@ -8,7 +8,7 @@ Public tracking began at **2026-07-24T09:00:00-04:00** in America/Toronto, which
 
 ## Current public sources
 
-- [`data/campaign-rules.json`](data/campaign-rules.json) is authoritative for the 18 current campaign rules, their stable IDs, order, exact public wording and website surfaces.
+- [`data/campaign-rules.json`](data/campaign-rules.json) is authoritative for the 12 current campaign rules, their stable IDs, order, exact public wording and website surfaces.
 - [`platform/`](platform/README.md) contains the released platform policies and policy packages.
 - [`changes/`](changes) contains permanent public change records. Historical records are Markdown; new records are JSON.
 - [`CHANGELOG.md`](CHANGELOG.md) preserves the published `v1.0.0` and `v1.1.0` release history.

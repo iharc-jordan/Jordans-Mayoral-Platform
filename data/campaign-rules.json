@@ -4,141 +4,134 @@
     {
       "id": "rule-1",
       "number": 1,
-      "title": "Make, explain and own decisions",
-      "statement": "Town Hall exists to serve the people of Port Hope. I will make decisions, explain them, own the result and change course when the facts show that a better answer is needed.",
+      "title": "Facts before spin",
+      "statement": "Material factual claims will be backed by identifiable public evidence.",
       "statementStyle": "quote",
       "detail": [
         {
           "type": "paragraph",
-          "text": "The campaign's published decision standard is:"
-        },
-        {
-          "type": "ordered-list",
-          "items": [
-            "Listen",
-            "Test",
-            "Decide",
-            "Report back"
-          ]
-        },
-        {
-          "type": "paragraph",
-          "text": "The published standard is to seek relevant expertise, test ideas against evidence, cost and public impact, make a decision and own it."
+          "text": "Opinions, estimates, interpretations and inferences will be identified as such. If the campaign publishes something materially wrong, the correction and original wording will remain publicly accessible."
         }
       ],
-      "evidence": null,
+      "evidence": "Source links, public corrections and the platform change log.",
       "surfaces": [
-        "/how-ill-govern"
+        "/transparency"
       ]
     },
     {
       "id": "rule-2",
       "number": 2,
-      "title": "Test small before buying big",
-      "statement": "Port Hope should test new methods in ways that protect taxpayers and produce evidence residents can inspect.",
-      "statementStyle": "paragraph",
+      "title": "Show the money",
+      "statement": "The campaign will cap individual contributions at $500 and publish campaign-finance information during the campaign.",
+      "statementStyle": "quote",
       "detail": [
         {
-          "type": "paragraph",
-          "text": "Small pilots should begin with clear outcomes, fixed limits, independent evaluation and published results. A successful pilot should still proceed through lawful procurement before any major rollout."
+          "type": "unordered-list",
+          "items": [
+            "The cap applies consistently to eligible monetary and in-kind contributions. Amounts that cannot be accepted will be returned or refunded and included in public reporting.",
+            "Published information will include contribution distribution, spending categories and material consultants, contractors, agencies, advisers, professional service providers and vendors receiving campaign funds."
+          ]
         }
       ],
-      "evidence": null,
+      "evidence": "Contribution distribution, returned or refunded contributions, campaign spending, paid-relationship disclosures and the official filing.",
       "surfaces": [
-        "/how-ill-govern"
+        "/transparency"
       ]
     },
     {
       "id": "rule-3",
       "number": 3,
-      "title": "No Wrong Door",
-      "statement": "Residents should not need to know whether the Town, County, Province, police, public health, a utility or another body controls an issue before asking for help.",
-      "statementStyle": "paragraph",
+      "title": "Donations buy no access",
+      "statement": "A donation will not purchase better access, a faster response, political preference, favourable treatment or advance access to decisions.",
+      "statementStyle": "quote",
       "detail": [
         {
           "type": "paragraph",
-          "text": "Town Hall will give residents a clear explanation, a useful next step and visible follow-through. That includes explaining responsibility, helping the resident navigate the system, advocating where another body controls the solution, escalating unresolved failures, reporting when progress is blocked and carrying the file until there is a clear answer."
+          "text": "The standard covers campaign responses and advocacy involving grants, contracts, procurement, planning, permitting, appointments and municipal services. Donors retain the same ordinary access as every other resident, no more and no less."
         }
       ],
-      "evidence": null,
+      "evidence": "Public corrections, breach disclosures and corrective action.",
       "surfaces": [
-        "/how-ill-govern"
+        "/transparency"
       ]
     },
     {
       "id": "rule-4",
       "number": 4,
-      "title": "Show the Work",
-      "statement": "Major decisions should arrive with enough information for a resident to understand the choice before Council votes.",
-      "statementStyle": "paragraph",
+      "title": "Campaign in the open",
+      "statement": "Campaign communications will be attributable, factual and accountable.",
+      "statementStyle": "quote",
       "detail": [
         {
           "type": "paragraph",
-          "text": "Published decision information should include:"
-        },
-        {
-          "type": "unordered-list",
-          "items": [
-            "cost and funding source",
-            "alternatives considered",
-            "responsibility and timeline",
-            "risks and consequences of doing nothing",
-            "who benefits and who pays",
-            "urban and rural impacts",
-            "what changes if assumptions change"
-          ]
+          "text": "The campaign will not use fake community accounts, anonymous attack pages, concealed proxies or intermediaries to spread personal attacks, and it will not target candidates’ families or irrelevant private lives. Forceful, factual criticism of public records, statements, conduct, competence and policy remains fair game."
         }
       ],
-      "evidence": null,
+      "evidence": "Public campaign communications, corrections and breach disclosures.",
       "surfaces": [
-        "/how-ill-govern"
+        "/transparency"
       ]
     },
     {
       "id": "rule-5",
       "number": 5,
-      "title": "Participation with responsibility",
-      "statement": "Listening should reach beyond whoever can attend the loudest meeting.",
-      "statementStyle": "paragraph",
+      "title": "Protect people’s information",
+      "statement": "Taking part in the campaign will not be used to quietly build political profiles.",
+      "statementStyle": "quote",
       "detail": [
         {
-          "type": "paragraph",
-          "text": "Published participation methods include open consultations and representative surveys, randomly selected resident panels where useful, participatory budgeting for defined discretionary funds, Ward 1 and Ward 2 engagement, expert and lived-experience input, and referendums only for exceptional, major and potentially irreversible decisions where legally appropriate."
-        },
-        {
-          "type": "paragraph",
-          "text": "Council will make, explain and own the final decision."
+          "type": "unordered-list",
+          "items": [
+            "Poll choices will not be attached to campaign contact records, volunteer records, lawn-sign requests or political profiles.",
+            "Youth Idea Lab submissions remain private unless the campaign later receives permission to publish an idea.",
+            "Contact, volunteer, update, concern, media, conversation and lawn-sign records will be reviewed for deletion when no longer needed, subject to legal, security, dispute and election-compliance requirements.",
+            "Raw poll-vote and duplicate-prevention identifiers will be removed through campaign data maintenance after a poll has been closed for at least 180 days. Aggregate counts and public summaries may remain."
+          ]
         }
       ],
-      "evidence": null,
+      "evidence": "Published privacy practices, corrections and disclosed failures.",
       "surfaces": [
-        "/how-ill-govern"
+        "/transparency"
       ]
     },
     {
       "id": "rule-6",
       "number": 6,
-      "title": "Report back after campaign polls",
-      "statement": "After a campaign poll closes, the campaign will publish what it heard, where people disagreed and what changed as a result.",
-      "statementStyle": "paragraph",
+      "title": "Change course in public",
+      "statement": "If the campaign changes a published position, the previous position, the reason for the change and the new position will remain publicly visible.",
+      "statementStyle": "quote",
       "detail": [
         {
-          "type": "paragraph",
-          "text": "Campaign polls are presented as informal opinion polls, not scientific surveys, verified resident votes, official municipal consultation or official election votes."
+          "type": "unordered-list",
+          "items": [
+            "Campaign polls and consultations are inputs, not binding votes or scientific surveys.",
+            "After a poll or consultation, the campaign will report what it heard, where people disagreed and whether the result changed the campaign’s position.",
+            "If a poll, consultation or other credible evidence reveals a clear and substantial objection to a position, the campaign may change course, but it will explain the decision and preserve the earlier position rather than quietly editing it away.",
+            "Unmet commitments and corrective action will also remain publicly visible."
+          ]
         }
       ],
-      "evidence": null,
+      "evidence": "Poll report-backs, corrections, the platform change log, disclosed failures and corrective action.",
       "surfaces": [
-        "/how-ill-govern"
+        "/transparency"
       ]
     },
     {
       "id": "rule-7",
       "number": 7,
-      "title": "Use strong-mayor powers transparently",
-      "statement": "Formal mayoral powers will be used transparently and proportionately to advance a clear municipal purpose.",
+      "title": "Make, explain and own decisions",
+      "statement": "Town Hall exists to serve the people of Port Hope. I will make decisions, explain them, own the result and change course when the facts show that a better answer is needed.",
       "statementStyle": "paragraph",
-      "detail": [],
+      "detail": [
+        {
+          "type": "unordered-list",
+          "items": [
+            "The decision standard is: Listen, Test, Decide, Report back.",
+            "Relevant expertise, evidence, cost and public impact will be tested before a decision.",
+            "Formal mayoral powers will be used transparently and proportionately for a clear municipal purpose."
+          ]
+        }
+      ],
       "evidence": null,
       "surfaces": [
         "/how-ill-govern"
@@ -147,13 +140,16 @@
     {
       "id": "rule-8",
       "number": 8,
-      "title": "One Port Hope",
-      "statement": "Every major decision should explain urban and rural impacts, service and capital differences, emergency access, agriculture, roads, downtown pressures, who benefits and who pays.",
+      "title": "No Wrong Door",
+      "statement": "Residents should not need to know whether the Town, County, Province, police, public health, a utility or another body controls an issue before asking Town Hall for help.",
       "statementStyle": "paragraph",
       "detail": [
         {
-          "type": "paragraph",
-          "text": "Equal service can require different delivery based on local needs."
+          "type": "unordered-list",
+          "items": [
+            "Town Hall will explain responsibility, provide a useful next step, help navigate the system, advocate or escalate where appropriate and carry the file until there is a clear answer.",
+            "Technology should make Town Hall easier to deal with by reducing repetitive work, improving follow-up and making information easier to find while preserving human judgement and privacy."
+          ]
         }
       ],
       "evidence": null,
@@ -164,17 +160,16 @@
     {
       "id": "rule-9",
       "number": 9,
-      "title": "Use technology to improve service while protecting human judgement and privacy",
-      "statement": "Technology should make Town Hall easier to deal with.",
-      "statementStyle": "quote",
+      "title": "Decide in public. Show the work.",
+      "statement": "Major municipal decisions should be debated and decided in public. Closed sessions should be used only where the law permits and a compelling public-interest reason makes confidentiality necessary.",
+      "statementStyle": "paragraph",
       "detail": [
         {
-          "type": "paragraph",
-          "text": "It should reduce repetitive work, improve follow-up, make information easier to find and help residents understand the status and evidence behind a decision."
-        },
-        {
-          "type": "paragraph",
-          "text": "Technology will support human judgement while improving service, protecting privacy and producing results residents can check."
+          "type": "unordered-list",
+          "items": [
+            "Before a major vote, residents should be able to see the problem, options, cost and funding source, responsibility, timeline, risks, consequences of doing nothing, who benefits, who pays and the impacts on both wards.",
+            "When confidentiality is necessary, Town Hall should publish as much as legally possible about the subject, the reason confidentiality was required and the eventual decision."
+          ]
         }
       ],
       "evidence": null,
@@ -185,13 +180,13 @@
     {
       "id": "rule-10",
       "number": 10,
-      "title": "Protect poll privacy",
-      "statement": "Answering an opinion poll does not subscribe anyone to campaign email, create a volunteer record, add a lawn-sign request, or attach the poll choice to a campaign contact form.",
+      "title": "Test small before buying big",
+      "statement": "Port Hope should test new methods in ways that protect taxpayers and produce evidence residents can inspect.",
       "statementStyle": "paragraph",
       "detail": [
         {
           "type": "paragraph",
-          "text": "A fuller concern can be sent through a separate form, but the campaign does not connect that message to the person's poll choice."
+          "text": "Small pilots should begin with clear outcomes, fixed limits, independent evaluation and published results. A successful pilot should still proceed through lawful procurement before a major rollout."
         }
       ],
       "evidence": null,
@@ -202,17 +197,17 @@
     {
       "id": "rule-11",
       "number": 11,
-      "title": "Protect youth privacy and choice",
-      "statement": "Youth Idea Lab submissions remain private unless the campaign later contacts the submitter and receives permission to publish the idea.",
+      "title": "Listen beyond the loudest room",
+      "statement": "Organized groups will be heard, but no group will be treated as representative of the whole community simply because it is louder, more organized or more present at meetings.",
       "statementStyle": "paragraph",
       "detail": [
         {
-          "type": "paragraph",
-          "text": "The form does not request a name, school, address, phone number, birthdate, or exact age. An email is optional, stored separately from the idea, and used only to reply."
-        },
-        {
-          "type": "paragraph",
-          "text": "Poll choices, game activity, and challenge choices are not used to build supporter profiles or for political microtargeting."
+          "type": "unordered-list",
+          "items": [
+            "Decisions will weigh representative public opinion, directly affected residents, expert evidence, lived experience, legal rights, costs and the long-term public interest.",
+            "A small organized minority will not automatically override a clear and credible majority view. A majority will not override legal rights, evidence or the municipality’s duties.",
+            "Council will make, explain and own the final decision."
+          ]
         }
       ],
       "evidence": null,
@@ -223,132 +218,18 @@
     {
       "id": "rule-12",
       "number": 12,
-      "title": "Review campaign data for deletion when it is no longer needed",
-      "statement": "Contact, volunteer, update, concern, media, conversation, and lawn-sign records are kept while they are needed to respond and organize campaign activity, then reviewed for deletion when they are no longer needed.",
+      "title": "One Port Hope",
+      "statement": "Port Hope is one municipality, but equal treatment does not always require identical delivery.",
       "statementStyle": "paragraph",
       "detail": [
         {
           "type": "paragraph",
-          "text": "Some records may be retained longer when required for legal, security, dispute, or election compliance purposes."
-        },
-        {
-          "type": "paragraph",
-          "text": "Raw poll vote and duplicate-prevention identifiers are removed through campaign data maintenance after a poll has been closed for at least 180 days. Aggregate counts and public result summaries may be kept after those identifiers are removed."
+          "text": "Major decisions will account for the different needs of Ward 1 and Ward 2, including roads, agriculture, emergency access, servicing, infrastructure, downtown pressures, who benefits and who pays."
         }
       ],
       "evidence": null,
       "surfaces": [
         "/how-ill-govern"
-      ]
-    },
-    {
-      "id": "rule-13",
-      "number": 13,
-      "title": "$500 maximum per individual",
-      "statement": "The campaign will not accept more than $500 from any individual.",
-      "statementStyle": "quote",
-      "detail": [
-        {
-          "type": "paragraph",
-          "text": "The limit applies consistently to eligible monetary and in-kind contributions. Amounts that cannot be accepted will be returned or refunded and included in approved public reporting."
-        }
-      ],
-      "evidence": "Contribution distribution, returned or refunded contributions, and approved finance publications.",
-      "surfaces": [
-        "/transparency"
-      ]
-    },
-    {
-      "id": "rule-14",
-      "number": 14,
-      "title": "Facts must be sourced. Opinions must be identified.",
-      "statement": "Material factual claims will be backed by identifiable public evidence.",
-      "statementStyle": "quote",
-      "detail": [
-        {
-          "type": "paragraph",
-          "text": "The campaign will not publish material factual claims about another candidate, public institution, municipal decision or policy proposal unless those claims are supported by identifiable public evidence. Estimates, interpretations, inferences and political opinions will be clearly identified as such. If the campaign publishes something materially wrong, the correction and original wording will remain publicly accessible."
-        }
-      ],
-      "evidence": "Source links, public corrections, and the platform-change history.",
-      "surfaces": [
-        "/transparency"
-      ]
-    },
-    {
-      "id": "rule-15",
-      "number": 15,
-      "title": "No donor priority or preferential access",
-      "statement": "A donation will not purchase better access, a faster response, political preference or favourable treatment.",
-      "statementStyle": "quote",
-      "detail": [
-        {
-          "type": "paragraph",
-          "text": "That standard covers meetings and campaign responses as well as advocacy involving grants, contracts, procurement, planning, permitting, appointments, municipal services and advance access to decisions. Donors retain the same ordinary access as every other resident—no more and no less."
-        }
-      ],
-      "evidence": "The public corrections and breach record, with any failure and corrective action disclosed.",
-      "surfaces": [
-        "/transparency"
-      ]
-    },
-    {
-      "id": "rule-16",
-      "number": 16,
-      "title": "Proactive campaign-finance reporting",
-      "statement": "Approved campaign-finance information will be published during the campaign.",
-      "statementStyle": "quote",
-      "detail": [
-        {
-          "type": "paragraph",
-          "text": "Residents should not have to wait for the legally required post-election filing to see how the campaign is funded and where campaign money goes."
-        }
-      ],
-      "evidence": "Finances at a glance, contribution distribution, campaign spending, other disclosures and the official filing.",
-      "surfaces": [
-        "/transparency"
-      ]
-    },
-    {
-      "id": "rule-17",
-      "number": 17,
-      "title": "Accountable campaign conduct and paid relationships",
-      "statement": "Campaign communications will be attributable, factual and accountable.",
-      "statementStyle": "quote",
-      "detail": [
-        {
-          "type": "paragraph",
-          "text": "The campaign will not use fake community accounts, anonymous attack pages, concealed proxies or intermediaries to spread personal attacks, and it will not target candidates’ families or irrelevant private lives. That does not prevent forceful, factual criticism of public records, statements, conduct, competence or policy positions."
-        },
-        {
-          "type": "paragraph",
-          "text": "Approved disclosures will identify material consultants, contractors, agencies, advisers, professional service providers and vendors receiving campaign funds."
-        }
-      ],
-      "evidence": "Material paid-relationship disclosures, campaign spending, corrections and breach disclosures.",
-      "surfaces": [
-        "/transparency"
-      ]
-    },
-    {
-      "id": "rule-18",
-      "number": 18,
-      "title": "Public corrections, platform changes and disclosed failures",
-      "statement": "Material corrections and changes will remain visible instead of quietly disappearing.",
-      "statementStyle": "quote",
-      "detail": [
-        {
-          "type": "paragraph",
-          "text": "The public record will explain what changed, why it changed, the evidence or feedback that informed it, and what corrective action followed when a commitment was not met."
-        },
-        {
-          "type": "paragraph",
-          "text": "If the campaign fails to meet one of these commitments, the failure will be recorded publicly with an explanation and corrective action."
-        }
-      ],
-      "evidence": "Corrections, platform-change history, disclosed failures and corrective action.",
-      "surfaces": [
-        "/transparency"
       ]
     }
   ]
