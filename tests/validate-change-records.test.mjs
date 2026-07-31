@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import fs from "node:fs";
 import test from "node:test";
 import {
   changedRuleIds,
@@ -117,8 +116,12 @@ test("the canonical schema requires non-empty, unique, contiguous ordered rules 
   assert.match(validateRulesDocument({ schemaVersion: 1, rules: [] }).join("\n"), /non-empty rules array/);
 });
 
-test("the canonical migration preserves all v1.1.0 rule wording, order, IDs, and surfaces", () => {
-  const canonical = JSON.parse(fs.readFileSync(new URL("../data/campaign-rules.json", import.meta.url), "utf8"));
+test("the historical v1.1.0 migration preserves all rule wording, order, IDs, and surfaces", () => {
+  const canonical = JSON.parse(execFileSync(
+    "git",
+    ["show", "b447a4ef840b9e6588c62bb86108eb1e27bd0300:data/campaign-rules.json"],
+    { encoding: "utf8" },
+  ));
   const legacy = execFileSync("git", ["show", "v1.1.0:CAMPAIGN-RULES.md"], { encoding: "utf8" })
     .replace(/\r\n?/g, "\n");
   const legacyRules = [...legacy.matchAll(
