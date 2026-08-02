@@ -1,0 +1,36 @@
+{
+  "recordType": "presentation",
+  "id": "2026-08-02-reorganize-campaign-navigation-and-policy-discovery",
+  "date": "2026-08-02",
+  "title": "Reorganize campaign navigation and policy discovery",
+  "classification": "clarification",
+  "affectedSurfaces": [
+    "/",
+    "/listening",
+    "/priorities",
+    "/priorities/affordability-infrastructure",
+    "/priorities/diverse-local-economy",
+    "/priorities/growth-housing-heritage",
+    "/priorities/healthcare-access",
+    "/priorities/public-safety-community",
+    "/priorities/wesleyville",
+    "/straight-answers",
+    "/transparency"
+  ],
+  "summary": "The campaign reorganized its website so The Plan is the main route to official positions, Straight Answers is a question-based view into those positions, Transparency is directly accessible, and priority pages use consistent cross-navigation.",
+  "reason": "The previous navigation presented Plan & Priorities and Straight Answers as separate primary destinations even though they often addressed the same subjects. Long priority pages also made it difficult to continue exploring without returning to the plan index. The revised structure reduces duplication, improves issue finding and puts the short answer before the technical detail.",
+  "previousPresentation": "The primary navigation listed Plan & Priorities and Straight Answers as separate top-level destinations, while Campaign Transparency appeared inside Updates & Tools. The plan hub repeated commitment, funding and measurement detail across large cards. Priority pages used inconsistent or end-of-page cross-navigation, and Questions & Commitments repeated general policy answers.",
+  "newPresentation": "The primary navigation uses The Plan as the main policy destination, with grouped access to the plan overview, six core priorities and Straight Answers. Transparency is a direct primary destination. Campaign news, participation and civic tools are grouped under Campaign. Priority pages share a short summary, a visible issue switcher, on-page navigation and previous and next controls. Public Questions & Follow-Through is reserved for genuine public questions, response status and listening reports.",
+  "practicalEffect": "Residents can reach a specific issue with fewer competing choices, move directly between priorities without relying on the browser Back button and understand the short version before opening detailed evidence. Existing public URLs remain available.",
+  "whatDidNotChange": "No policy position, promise, cost, timeline, eligibility rule, campaign rule or governing commitment changed. The Port Hope Energy Dividend and Efficient Government Starts at the Top remain public commitments and retain their existing routes. Detailed evidence, sources and public change history remain available.",
+  "supportingLinks": [
+    {
+      "title": "The Plan",
+      "url": "https://jordanformayor.ca/priorities"
+    },
+    {
+      "title": "Campaign Transparency",
+      "url": "https://jordanformayor.ca/transparency"
+    }
+  ]
+}
