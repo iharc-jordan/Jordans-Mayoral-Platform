@@ -30,6 +30,12 @@ The change record identifies the changed rule or policy IDs and surfaces, explai
 
 Existing `platform/*.md` policies use the same one-record workflow, with a simple exact changed-file scope check. The validator does not infer prose meaning.
 
+## Presentation records
+
+An immutable presentation record documents a reviewed material change to how voters find, distinguish or interpret official campaign information, without changing a campaign rule or policy. It uses `"recordType": "presentation"` and the separate exact schema enforced by `npm run validate`.
+
+Presentation records are limited to information architecture, public-surface organization or comparable publication-structure changes. They are not a website activity log and cannot be combined with campaign-rule, policy, validator, workflow, schema, test, package or governance changes. Existing political records do not include `recordType` and continue using the political-record contract.
+
 Historical change records are never edited or deleted. Git history, the stable change ID, its date and the merge commit provide the routine public identity. A semantic-version release is optional and reserved for a deliberately bundled platform release.
 
 ## Reuse and attribution

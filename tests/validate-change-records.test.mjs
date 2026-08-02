@@ -96,6 +96,38 @@ function ruleChange(overrides = {}) {
   };
 }
 
+function presentationRecord(overrides = {}) {
+  return {
+    recordType: "presentation",
+    id: "2099-01-01-fictional-presentation",
+    date: "2099-01-01",
+    title: "Fictional presentation change",
+    classification: "clarification",
+    affectedSurfaces: ["/priorities", "/transparency"],
+    summary: "A fictional presentation summary.",
+    reason: "A fictional presentation reason.",
+    previousPresentation: "The fictional former presentation.",
+    newPresentation: "The fictional new presentation.",
+    practicalEffect: "A fictional practical effect.",
+    whatDidNotChange: "Fictional policy substance remains unchanged.",
+    supportingLinks: [{ title: "Fictional public page", url: "https://example.com/page" }],
+    ...overrides,
+  };
+}
+
+function presentationChange(overrides = {}) {
+  const document = rulesDocument();
+  const recordPath = "changes/2099-01-01-fictional-presentation.json";
+  return {
+    recordPath,
+    input: {
+      baseFiles: { [rulesPath]: source(document) },
+      proposedFiles: { [rulesPath]: source(document), [recordPath]: source(presentationRecord(overrides)) },
+      changes: [{ status: "A", path: recordPath }],
+    },
+  };
+}
+
 test("the canonical schema requires non-empty, unique, contiguous ordered rules with explicit surfaces", () => {
   const valid = rulesDocument();
   assert.deepEqual(validateRulesDocument(valid), []);
@@ -147,6 +179,81 @@ test("changed rule IDs come from deep comparison of complete rule objects", () =
 
 test("one exact JSON record validates a structured rule change", () => {
   assert.deepEqual(validateChangeSet(ruleChange().input), []);
+});
+
+test("presentation records use their own exact schema for clarifications and administrative corrections", () => {
+  assert.deepEqual(validateChangeSet(presentationChange().input), []);
+  assert.deepEqual(validateChangeSet(presentationChange({ classification: "administrative-correction" }).input), []);
+});
+
+test("political records without recordType continue using the political schema", () => {
+  assert.deepEqual(validateChangeSet(ruleChange().input), []);
+});
+
+test("presentation records reject unknown types and missing or extra keys", () => {
+  const unknown = presentationChange({ recordType: "website" });
+  assert.match(validateChangeSet(unknown.input).join("\n"), /Unknown recordType/);
+
+  const missing = presentationRecord();
+  delete missing.reason;
+  const missingChange = presentationChange();
+  missingChange.input.proposedFiles[missingChange.recordPath] = source(missing);
+  assert.match(validateChangeSet(missingChange.input).join("\n"), /must contain exactly/);
+
+  const extra = presentationChange({ affectedRuleIds: [] });
+  assert.match(validateChangeSet(extra.input).join("\n"), /must contain exactly/);
+});
+
+test("presentation records validate their immutable public fields", () => {
+  for (const overrides of [
+    { id: "2099-01-01-wrong" },
+    { date: "2099-02-30" },
+    { affectedSurfaces: [] },
+    { affectedSurfaces: ["/transparency", "/priorities", "/priorities"] },
+    { affectedSurfaces: ["/transparency", "/priorities"] },
+    { affectedSurfaces: ["/Transparency"] },
+    { supportingLinks: [{ title: "Bad", url: "http://example.com" }] },
+    { supportingLinks: [{ title: "", url: "https://example.com" }] },
+    { supportingLinks: [{ title: "Extra", url: "https://example.com", note: "not allowed" }] },
+    { previousPresentation: "Same presentation.", newPresentation: " Same presentation. " },
+  ]) {
+    assert.notDeepEqual(validateChangeSet(presentationChange(overrides).input), []);
+  }
+});
+
+test("presentation records remain separate from political, infrastructure, and other record changes", () => {
+  const mixedRule = presentationChange();
+  mixedRule.input.proposedFiles[rulesPath] = source({
+    ...rulesDocument(),
+    rules: rulesDocument().rules.map((rule, index) => index === 0 ? { ...rule, statement: "Changed fictional statement." } : rule),
+  });
+  mixedRule.input.changes.unshift({ status: "M", path: rulesPath });
+  assert.match(validateChangeSet(mixedRule.input).join("\n"), /cannot be mixed/);
+
+  const mixedPolicy = presentationChange();
+  mixedPolicy.input.proposedFiles["platform/fictional-policy.md"] = "Changed policy.";
+  mixedPolicy.input.changes.unshift({ status: "M", path: "platform/fictional-policy.md" });
+  assert.match(validateChangeSet(mixedPolicy.input).join("\n"), /cannot be mixed/);
+
+  const mixedPolitical = presentationChange();
+  const political = ruleChange();
+  mixedPolitical.input.proposedFiles[rulesPath] = political.input.proposedFiles[rulesPath];
+  mixedPolitical.input.proposedFiles[political.recordPath] = political.input.proposedFiles[political.recordPath];
+  mixedPolitical.input.changes.unshift(...political.input.changes);
+  assert.match(validateChangeSet(mixedPolitical.input).join("\n"), /exactly one new presentation record/);
+
+  const twoPresentations = presentationChange();
+  twoPresentations.input.proposedFiles["changes/2099-01-02-another-presentation.json"] = source(presentationRecord({
+    id: "2099-01-02-another-presentation",
+    date: "2099-01-02",
+  }));
+  twoPresentations.input.changes.push({ status: "A", path: "changes/2099-01-02-another-presentation.json" });
+  assert.match(validateChangeSet(twoPresentations.input).join("\n"), /exactly one new presentation record/);
+
+  const withTest = presentationChange();
+  withTest.input.proposedFiles["tests/validate-change-records.test.mjs"] = "changed";
+  withTest.input.changes.unshift({ status: "M", path: "tests/validate-change-records.test.mjs" });
+  assert.match(validateChangeSet(withTest.input).join("\n"), /may change only/);
 });
 
 test("Rule 19 can be appended through one ordinary political change without infrastructure edits", () => {

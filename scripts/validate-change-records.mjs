@@ -33,6 +33,21 @@ const RECORD_KEYS = [
   "whatDidNotChange",
   "supportingLinks",
 ];
+const PRESENTATION_RECORD_KEYS = [
+  "recordType",
+  "id",
+  "date",
+  "title",
+  "classification",
+  "affectedSurfaces",
+  "summary",
+  "reason",
+  "previousPresentation",
+  "newPresentation",
+  "practicalEffect",
+  "whatDidNotChange",
+  "supportingLinks",
+];
 const CLASSIFICATIONS = new Set([
   "clarification",
   "evidence-update",
@@ -41,6 +56,10 @@ const CLASSIFICATIONS = new Set([
   "scope-reduction",
   "position-change",
   "policy-withdrawal",
+  "administrative-correction",
+]);
+const PRESENTATION_CLASSIFICATIONS = new Set([
+  "clarification",
   "administrative-correction",
 ]);
 const INFRASTRUCTURE_PATHS = [
@@ -240,6 +259,56 @@ function validateRecord(record, recordPath, context) {
   return errors;
 }
 
+function validatePresentationRecord(record, recordPath) {
+  const errors = [];
+  if (!exactKeys(record, PRESENTATION_RECORD_KEYS, "Presentation record", errors)) return errors;
+  const stem = path.posix.basename(recordPath, ".json");
+  if (record.recordType !== "presentation") errors.push("Presentation record recordType must be presentation.");
+  if (!/^\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(record.id) || record.id !== stem) {
+    errors.push("Presentation record id must equal its date-prefixed filename stem.");
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(record.date) || !record.id.startsWith(`${record.date}-`)) {
+    errors.push("Presentation record date must be YYYY-MM-DD and match its id prefix.");
+  } else if (new Date(`${record.date}T00:00:00Z`).toISOString().slice(0, 10) !== record.date) {
+    errors.push("Presentation record date must be a real calendar date.");
+  }
+  for (const field of [
+    "title",
+    "summary",
+    "reason",
+    "previousPresentation",
+    "newPresentation",
+    "practicalEffect",
+    "whatDidNotChange",
+  ]) {
+    if (!nonEmptyString(record[field])) errors.push(`Presentation record ${field} must be a non-empty string.`);
+  }
+  if (typeof record.previousPresentation === "string" && typeof record.newPresentation === "string"
+    && record.previousPresentation.trim() === record.newPresentation.trim()) {
+    errors.push("Presentation record previousPresentation and newPresentation must differ.");
+  }
+  if (!PRESENTATION_CLASSIFICATIONS.has(record.classification)) {
+    errors.push("Presentation record classification must be clarification or administrative-correction.");
+  }
+  if (!stringArray(record.affectedSurfaces, { nonempty: true })
+    || !record.affectedSurfaces.every(publicPath)
+    || !isDeepStrictEqual(record.affectedSurfaces, [...record.affectedSurfaces].sort())) {
+    errors.push("Presentation record affectedSurfaces must be a non-empty, unique, lexicographically sorted array of public paths.");
+  }
+  if (!Array.isArray(record.supportingLinks)) {
+    errors.push("Presentation record supportingLinks must be an array.");
+  } else {
+    for (const [index, link] of record.supportingLinks.entries()) {
+      const label = `Presentation supporting link ${index + 1}`;
+      if (!exactKeys(link, ["title", "url"], label, errors)) continue;
+      if (!nonEmptyString(link.title) || !publicHttps(link.url)) {
+        errors.push(`${label} requires a title and public HTTPS URL.`);
+      }
+    }
+  }
+  return errors;
+}
+
 function policyId(filePath) {
   const match = filePath.match(/^platform\/([a-z0-9]+(?:-[a-z0-9]+)*)\.md$/);
   return match && match[1] !== "README" ? match[1] : null;
@@ -284,6 +353,18 @@ export function validateChangeSet({ baseFiles = {}, proposedFiles = {}, changes 
   );
   for (const change of invalidNewRecords) errors.push(`New change records must use changes/YYYY-MM-DD-slug.json: ${change.path}.`);
 
+  const newRecordTypes = newJsonRecords.map((change) => {
+    const source = proposedFiles[change.path];
+    const record = source === undefined ? null : parseJson(source, change.path, errors);
+    return { ...change, record };
+  });
+  const presentationRecords = newRecordTypes.filter(({ record }) => record?.recordType === "presentation");
+  for (const { path: changePath, record } of newRecordTypes) {
+    if (record !== null && record?.recordType !== undefined && record.recordType !== "presentation") {
+      errors.push(`Unknown recordType in ${changePath}.`);
+    }
+  }
+
   const migration = baseSource === undefined && proposedSource !== undefined;
   const changedPolicies = normalizedChanges.map((change) => policyId(change.path)).filter(Boolean).sort();
   const uniquePolicyIds = [...new Set(changedPolicies)];
@@ -301,6 +382,23 @@ export function validateChangeSet({ baseFiles = {}, proposedFiles = {}, changes 
     .filter((filePath) => INFRASTRUCTURE_PATHS.some((pattern) => pattern.test(filePath)));
   if (politicalChange && infrastructureChanges.length) {
     errors.push(`Political data changes cannot be mixed with infrastructure or governance changes: ${infrastructureChanges.join(", ")}.`);
+  }
+  if (presentationRecords.length) {
+    if (presentationRecords.length !== 1 || newJsonRecords.length !== 1) {
+      errors.push("A presentation-record pull request may add exactly one new presentation record.");
+    }
+    if (politicalChange) {
+      errors.push("A presentation record cannot be mixed with a campaign-rule or policy change.");
+    }
+    const presentationPath = presentationRecords[0].path;
+    const otherChanges = normalizedChanges.filter((change) => change.path !== presentationPath);
+    if (otherChanges.length) {
+      errors.push("A presentation-record pull request may change only its new presentation record.");
+    }
+    for (const presentationRecord of presentationRecords) {
+      errors.push(...validatePresentationRecord(presentationRecord.record, presentationRecord.path));
+    }
+    return errors;
   }
   if (!politicalChange) {
     if (newJsonRecords.length) errors.push("A change record may be added only with a political data change.");
