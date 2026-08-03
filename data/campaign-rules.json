@@ -5,15 +5,19 @@
       "id": "rule-1",
       "number": 1,
       "title": "Facts before spin",
-      "statement": "Material factual claims will be backed by identifiable public evidence.",
+      "statement": "Factual claims from this campaign will be backed by sources residents can inspect.",
       "statementStyle": "quote",
       "detail": [
         {
           "type": "paragraph",
-          "text": "Opinions, estimates, interpretations and inferences will be identified as such. If the campaign publishes something materially wrong, the correction and original wording will remain publicly accessible."
+          "text": "Opinions, estimates, interpretations and reasonable inferences will be presented honestly as such."
+        },
+        {
+          "type": "paragraph",
+          "text": "If the campaign publishes something materially wrong, it will be corrected publicly. The correction and the original wording will both remain available so the record is not quietly rewritten."
         }
       ],
-      "evidence": "Source links, public corrections and the platform change log.",
+      "evidence": null,
       "surfaces": [
         "/transparency"
       ]
@@ -21,19 +25,24 @@
     {
       "id": "rule-2",
       "number": 2,
-      "title": "Show the money",
-      "statement": "The campaign will cap individual contributions at $500 and publish campaign-finance information during the campaign.",
+      "title": "Keep it grassroots. Show the money.",
+      "statement": "This campaign will cap individual contributions at $500 and publish where its money comes from and where it goes.",
       "statementStyle": "quote",
       "detail": [
         {
-          "type": "unordered-list",
-          "items": [
-            "The cap applies consistently to eligible monetary and in-kind contributions. Amounts that cannot be accepted will be returned or refunded and included in public reporting.",
-            "Published information will include contribution distribution, spending categories and material consultants, contractors, agencies, advisers, professional service providers and vendors receiving campaign funds."
-          ]
+          "type": "paragraph",
+          "text": "The $500 limit is self-imposed. This campaign should be powered by broad community support, not financed by a small group of people with the means to write large cheques."
+        },
+        {
+          "type": "paragraph",
+          "text": "No one should be able to use a large donation to buy greater access or push a private agenda to the front of the line. This campaign should answer to the community as a whole."
+        },
+        {
+          "type": "paragraph",
+          "text": "The cap applies to both monetary and in-kind contributions. The campaign will publish contribution distribution, spending categories and material paid relationships. Any amount the campaign cannot accept will be returned or refunded and included in public reporting."
         }
       ],
-      "evidence": "Contribution distribution, returned or refunded contributions, campaign spending, paid-relationship disclosures and the official filing.",
+      "evidence": null,
       "surfaces": [
         "/transparency"
       ]
@@ -42,15 +51,19 @@
       "id": "rule-3",
       "number": 3,
       "title": "Donations buy no access",
-      "statement": "A donation will not purchase better access, a faster response, political preference, favourable treatment or advance access to decisions.",
+      "statement": "A contribution will not purchase better access, a faster response, political preference, favourable treatment or advance access to decisions.",
       "statementStyle": "quote",
       "detail": [
         {
           "type": "paragraph",
-          "text": "The standard covers campaign responses and advocacy involving grants, contracts, procurement, planning, permitting, appointments and municipal services. Donors retain the same ordinary access as every other resident, no more and no less."
+          "text": "Donors will have the same ordinary access as every other resident, no more and no less."
+        },
+        {
+          "type": "paragraph",
+          "text": "This standard applies to campaign interactions and to any future advocacy or decision involving municipal grants, contracts, procurement, planning, permits, appointments or services."
         }
       ],
-      "evidence": "Public corrections, breach disclosures and corrective action.",
+      "evidence": null,
       "surfaces": [
         "/transparency"
       ]
@@ -59,15 +72,19 @@
       "id": "rule-4",
       "number": 4,
       "title": "Campaign in the open",
-      "statement": "Campaign communications will be attributable, factual and accountable.",
+      "statement": "This campaign will speak in its own name and stand behind what it publishes.",
       "statementStyle": "quote",
       "detail": [
         {
           "type": "paragraph",
-          "text": "The campaign will not use fake community accounts, anonymous attack pages, concealed proxies or intermediaries to spread personal attacks, and it will not target candidates’ families or irrelevant private lives. Forceful, factual criticism of public records, statements, conduct, competence and policy remains fair game."
+          "text": "The campaign will not use fake community accounts, anonymous attack pages, concealed proxies or intermediaries to spread personal attacks. Candidates’ families and irrelevant private lives will remain off limits."
+        },
+        {
+          "type": "paragraph",
+          "text": "Forceful and factual criticism of public records, decisions, statements, conduct, competence and policy remains fair game."
         }
       ],
-      "evidence": "Public campaign communications, corrections and breach disclosures.",
+      "evidence": null,
       "surfaces": [
         "/transparency"
       ]
@@ -76,20 +93,19 @@
       "id": "rule-5",
       "number": 5,
       "title": "Protect people’s information",
-      "statement": "Taking part in the campaign will not be used to quietly build political profiles.",
+      "statement": "Information shared with the campaign will be used only for the reason it was provided.",
       "statementStyle": "quote",
       "detail": [
         {
-          "type": "unordered-list",
-          "items": [
-            "Poll choices will not be attached to campaign contact records, volunteer records, lawn-sign requests or political profiles.",
-            "Youth Idea Lab submissions remain private unless the campaign later receives permission to publish an idea.",
-            "Contact, volunteer, update, concern, media, conversation and lawn-sign records will be reviewed for deletion when no longer needed, subject to legal, security, dispute and election-compliance requirements.",
-            "Raw poll-vote and duplicate-prevention identifiers will be removed through campaign data maintenance after a poll has been closed for at least 180 days. Aggregate counts and public summaries may remain."
-          ]
+          "type": "paragraph",
+          "text": "Taking part in a poll, submitting an idea, volunteering or contacting the campaign will not be used to quietly build a profile of someone’s political views."
+        },
+        {
+          "type": "paragraph",
+          "text": "Personal information will not be sold, repurposed for an unrelated purpose or kept longer than it is needed."
         }
       ],
-      "evidence": "Published privacy practices, corrections and disclosed failures.",
+      "evidence": null,
       "surfaces": [
         "/transparency"
       ]
@@ -98,20 +114,27 @@
       "id": "rule-6",
       "number": 6,
       "title": "Change course in public",
-      "statement": "If the campaign changes a published position, the previous position, the reason for the change and the new position will remain publicly visible.",
+      "statement": "Changing a position is sometimes responsible. Hiding the change is not.",
       "statementStyle": "quote",
       "detail": [
         {
-          "type": "unordered-list",
-          "items": [
-            "Campaign polls and consultations are inputs, not binding votes or scientific surveys.",
-            "After a poll or consultation, the campaign will report what it heard, where people disagreed and whether the result changed the campaign’s position.",
-            "If a poll, consultation or other credible evidence reveals a clear and substantial objection to a position, the campaign may change course, but it will explain the decision and preserve the earlier position rather than quietly editing it away.",
-            "Unmet commitments and corrective action will also remain publicly visible."
-          ]
+          "type": "paragraph",
+          "text": "A position may change because new facts emerge, costs or municipal authority become clearer, residents identify a better approach, implementation exposes a problem or circumstances materially change."
+        },
+        {
+          "type": "paragraph",
+          "text": "When that happens, the campaign will publish the previous position, the new position and the reason for the change. It will not quietly edit the old position out of existence."
+        },
+        {
+          "type": "paragraph",
+          "text": "Material corrections, unmet commitments and the action taken in response will also remain visible."
+        },
+        {
+          "type": "paragraph",
+          "text": "The standard is not stubborn consistency. It is honest reasoning and a visible public record."
         }
       ],
-      "evidence": "Poll report-backs, corrections, the platform change log, disclosed failures and corrective action.",
+      "evidence": null,
       "surfaces": [
         "/transparency"
       ]
@@ -120,16 +143,20 @@
       "id": "rule-7",
       "number": 7,
       "title": "Make, explain and own decisions",
-      "statement": "Town Hall exists to serve the people of Port Hope. I will make decisions, explain them, own the result and change course when the facts show that a better answer is needed.",
+      "statement": "Town Hall exists to serve the people of Port Hope. I will listen carefully, test the evidence, make a decision, explain it plainly and own the result.",
       "statementStyle": "paragraph",
       "detail": [
         {
-          "type": "unordered-list",
-          "items": [
-            "The decision standard is: Listen, Test, Decide, Report back.",
-            "Relevant expertise, evidence, cost and public impact will be tested before a decision.",
-            "Formal mayoral powers will be used transparently and proportionately for a clear municipal purpose."
-          ]
+          "type": "paragraph",
+          "text": "Listen. Test. Decide. Report back."
+        },
+        {
+          "type": "paragraph",
+          "text": "Decisions will be tested against relevant expertise, evidence, cost, practicality and public impact."
+        },
+        {
+          "type": "paragraph",
+          "text": "When the facts show that a better answer is available, I will change course and explain why. Formal mayoral powers will be used openly and for a clear municipal purpose."
         }
       ],
       "evidence": null,
@@ -141,15 +168,20 @@
       "id": "rule-8",
       "number": 8,
       "title": "No Wrong Door",
-      "statement": "Residents should not need to know whether the Town, County, Province, police, public health, a utility or another body controls an issue before asking Town Hall for help.",
+      "statement": "Residents should not be bounced from office to office or dismissed with “that’s not our jurisdiction.”",
       "statementStyle": "paragraph",
       "detail": [
         {
-          "type": "unordered-list",
-          "items": [
-            "Town Hall will explain responsibility, provide a useful next step, help navigate the system, advocate or escalate where appropriate and carry the file until there is a clear answer.",
-            "Technology should make Town Hall easier to deal with by reducing repetitive work, improving follow-up and making information easier to find while preserving human judgement and privacy."
-          ]
+          "type": "paragraph",
+          "text": "When someone brings a problem to Town Hall, the first responsibility is to help find the right path."
+        },
+        {
+          "type": "paragraph",
+          "text": "If the Town controls the issue, Town Hall should own the response. If another government, agency, utility or public body controls it, Town Hall should identify who is responsible, make the connection, help move the file, advocate when Port Hope’s interests are at stake and report back."
+        },
+        {
+          "type": "paragraph",
+          "text": "A resident should leave with a useful next step, a responsible contact and a clear understanding of what happens next. Town Hall should not wash its hands of a problem simply because the final authority sits somewhere else."
         }
       ],
       "evidence": null,
@@ -161,15 +193,34 @@
       "id": "rule-9",
       "number": 9,
       "title": "Decide in public. Show the work.",
-      "statement": "Major municipal decisions should be debated and decided in public. Closed sessions should be used only where the law permits and a compelling public-interest reason makes confidentiality necessary.",
+      "statement": "Too often, residents hear about major decisions only after the important conversations have already happened behind closed doors. Town Hall needs to reverse that trend.",
       "statementStyle": "paragraph",
       "detail": [
         {
+          "type": "paragraph",
+          "text": "Major municipal decisions should be developed, debated and decided in public."
+        },
+        {
+          "type": "paragraph",
+          "text": "Before a major vote, residents should be able to see:"
+        },
+        {
           "type": "unordered-list",
           "items": [
-            "Before a major vote, residents should be able to see the problem, options, cost and funding source, responsibility, timeline, risks, consequences of doing nothing, who benefits, who pays and the impacts on both wards.",
-            "When confidentiality is necessary, Town Hall should publish as much as legally possible about the subject, the reason confidentiality was required and the eventual decision."
+            "the problem being addressed",
+            "the available options",
+            "the recommended course",
+            "the cost and funding source",
+            "who is responsible",
+            "the expected timeline",
+            "who benefits and who pays",
+            "the consequences of doing nothing",
+            "the effects on Ward 1 and Ward 2"
           ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Closed session should be the narrow exception, not the place where the real decision is made. When some information must remain confidential, Town Hall should still disclose as much as possible and explain the eventual decision publicly."
         }
       ],
       "evidence": null,
@@ -181,12 +232,16 @@
       "id": "rule-10",
       "number": 10,
       "title": "Test small before buying big",
-      "statement": "Port Hope should test new methods in ways that protect taxpayers and produce evidence residents can inspect.",
+      "statement": "Port Hope should not gamble taxpayer money on an unproven idea at full scale.",
       "statementStyle": "paragraph",
       "detail": [
         {
           "type": "paragraph",
-          "text": "Small pilots should begin with clear outcomes, fixed limits, independent evaluation and published results. A successful pilot should still proceed through lawful procurement before a major rollout."
+          "text": "New methods should begin with a limited pilot, a clear objective, a fixed cost and timeline, independent evaluation and published results."
+        },
+        {
+          "type": "paragraph",
+          "text": "If a pilot succeeds, the Town can consider expanding it through normal procurement. If it fails, Town Hall should say so, learn from it and stop paying for something that does not work."
         }
       ],
       "evidence": null,
@@ -197,17 +252,21 @@
     {
       "id": "rule-11",
       "number": 11,
-      "title": "Listen beyond the loudest room",
-      "statement": "Organized groups will be heard, but no group will be treated as representative of the whole community simply because it is louder, more organized or more present at meetings.",
+      "title": "Listen beyond the loudest in the room",
+      "statement": "Showing up matters, but attendance at a meeting is not the same as representing the whole community.",
       "statementStyle": "paragraph",
       "detail": [
         {
-          "type": "unordered-list",
-          "items": [
-            "Decisions will weigh representative public opinion, directly affected residents, expert evidence, lived experience, legal rights, costs and the long-term public interest.",
-            "A small organized minority will not automatically override a clear and credible majority view. A majority will not override legal rights, evidence or the municipality’s duties.",
-            "Council will make, explain and own the final decision."
-          ]
+          "type": "paragraph",
+          "text": "Organized groups will be heard alongside representative public opinion, directly affected residents, expert evidence, lived experience and voices from both wards."
+        },
+        {
+          "type": "paragraph",
+          "text": "A small, organized group will not automatically outweigh a clear and credible majority view simply because it is louder, better connected or more persistent."
+        },
+        {
+          "type": "paragraph",
+          "text": "Council will consider the broader community, make the final decision, explain it and own the result."
         }
       ],
       "evidence": null,
@@ -219,12 +278,24 @@
       "id": "rule-12",
       "number": 12,
       "title": "One Port Hope",
-      "statement": "Port Hope is one municipality, but equal treatment does not always require identical delivery.",
+      "statement": "Ward 1 and Ward 2 have different needs, but neither matters less. One Port Hope means equal respect, honest representation and fair municipal attention for both.",
       "statementStyle": "paragraph",
       "detail": [
         {
           "type": "paragraph",
-          "text": "Major decisions will account for the different needs of Ward 1 and Ward 2, including roads, agriculture, emergency access, servicing, infrastructure, downtown pressures, who benefits and who pays."
+          "text": "One Port Hope does not mean one-size-fits-all. It does not mean pretending Ward 1 and Ward 2 have identical needs or allowing either ward to be treated as an afterthought."
+        },
+        {
+          "type": "paragraph",
+          "text": "Rural roads, agriculture, hamlets, emergency access and rural services matter. So do downtown infrastructure, housing, heritage, servicing, public spaces and urban growth."
+        },
+        {
+          "type": "paragraph",
+          "text": "Major decisions will explain how both wards are affected, who benefits, who pays and why the proposed balance is fair."
+        },
+        {
+          "type": "paragraph",
+          "text": "Different local needs may require different approaches, but both wards deserve serious representation and a fair result."
         }
       ],
       "evidence": null,
