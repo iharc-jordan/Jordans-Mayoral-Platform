@@ -27,7 +27,7 @@ Use Port Hope's leverage to pursue a generational opportunity while protecting e
 - Negotiate a binding and public Host Municipal Agreement with milestone-based upfront infrastructure contributions and ongoing host-community payments.
 - Seek advance funding for reasonably attributable project-driven roads, traffic, water, wastewater, stormwater, fire, emergency planning, recreation, municipal staffing, technical review and administrative capacity.
 - Require lifecycle funding, escalation clauses, audit rights, public reporting, dispute mechanisms and corrective-action tracking.
-- Require a staged, directly funded Port Hope Energy Dividend as a term of the final Host Municipal Agreement Jordan will support, with the first fully funded phase targeted before the end of the 2026-2030 council term.
+- Require a staged, directly funded Port Hope Energy Dividend as a term of the final Host Municipal Agreement Jordan will support, with the first fully funded phase beginning immediately when the agreement is signed and the required first-year funding, administration costs and 24-month reserve are secured.
 - Keep nuclear safety regulation with the Canadian Nuclear Safety Commission while Port Hope owns local emergency readiness.
 - Participate fully in regulatory and federal impact-assessment processes and retain independent advisers of the municipality's choosing at project cost.
 - Maintain regular emergency exercises, plain-language monitoring and regulatory reporting, a community liaison process and protection for genuinely sensitive security information.
