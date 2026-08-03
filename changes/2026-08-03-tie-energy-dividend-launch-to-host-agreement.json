@@ -1,0 +1,27 @@
+{
+  "id": "2026-08-03-tie-energy-dividend-launch-to-host-agreement",
+  "date": "2026-08-03",
+  "title": "Tie the first Energy Dividend stage to the Host Municipal Agreement",
+  "classification": "cost-or-timeline-update",
+  "affectedRuleIds": [],
+  "affectedPolicyIds": [
+    "port-hope-energy-dividend",
+    "wesleyville-on-port-hopes-terms"
+  ],
+  "affectedSurfaces": [],
+  "summary": "The first Port Hope Energy Dividend stage was previously targeted for launch before the end of the 2026-2030 council term. It will now launch immediately when Port Hope signs the binding Host Municipal Agreement and the required first-year funding, administration costs and 24-month reserve are secured.",
+  "reason": "The project and construction schedule are not fixed, so a 2030 calendar target could confuse residents or imply that the first benefit depends on construction beginning. Agreement signing is a clear event Port Hope can negotiate directly and enforce through the final municipal agreement.",
+  "previousValues": {},
+  "newValues": {},
+  "whatDidNotChange": "Jordan's firm support for new nuclear development at Wesleyville, the requirement for a binding Host Municipal Agreement, the $500, $1,000 and $1,500 annual maximum targets, quarterly maximums, the working household formula, eligibility and appeal rules, taxpayer protections, separate infrastructure and project-cost funding, the 24-month reserve, and the construction-stage and generation-stage triggers remain unchanged. The amounts remain campaign negotiating targets rather than an existing OPG offer or guaranteed entitlement.",
+  "supportingLinks": [
+    {
+      "title": "Port Hope Energy Dividend",
+      "url": "https://jordanformayor.ca/priorities/port-hope-energy-dividend"
+    },
+    {
+      "title": "Wesleyville priority",
+      "url": "https://jordanformayor.ca/priorities/wesleyville"
+    }
+  ]
+}
