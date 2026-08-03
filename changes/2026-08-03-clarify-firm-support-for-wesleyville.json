@@ -1,0 +1,35 @@
+{
+  "id": "2026-08-03-clarify-firm-support-for-wesleyville",
+  "date": "2026-08-03",
+  "title": "Clarify firm support for new nuclear at Wesleyville",
+  "classification": "position-change",
+  "affectedRuleIds": [],
+  "affectedPolicyIds": [
+    "port-hope-energy-dividend",
+    "wesleyville-on-port-hopes-terms"
+  ],
+  "affectedSurfaces": [],
+  "summary": "Jordan's previous Wesleyville position supported new nuclear but retained conditional-support wording that could imply he was still deciding whether to support the project. The updated position states firm support for new nuclear development at Wesleyville. The condition now applies specifically to the final Host Municipal Agreement Port Hope signs, which must protect taxpayers, fund project-driven municipal needs and include a fully funded resident Energy Dividend consistent with the published staged plan.",
+  "reason": "Jordan has concluded that new nuclear at Wesleyville is a generational opportunity Port Hope should actively pursue. Nuclear safety and licensing should remain with the independent federal regulator and qualified technical experts rather than being personally adjudicated by municipal candidates. Port Hope's political responsibility is to participate, ask hard questions, maintain local emergency readiness and negotiate the strongest possible binding local agreement.",
+  "previousValues": {},
+  "newValues": {},
+  "whatDidNotChange": "The staged Energy Dividend targets, working household formula, funding protections, eligibility model, project-cost reimbursement, infrastructure and emergency-readiness requirements, independent regulatory oversight, federal impact assessment, public participation, monitoring, reporting and taxpayer protections remain in place. This change does not claim that the project is approved, licensed, under construction or guaranteed to proceed.",
+  "supportingLinks": [
+    {
+      "title": "Wesleyville priority",
+      "url": "https://jordanformayor.ca/priorities/wesleyville"
+    },
+    {
+      "title": "Port Hope Energy Dividend",
+      "url": "https://jordanformayor.ca/priorities/port-hope-energy-dividend"
+    },
+    {
+      "title": "Canadian Nuclear Safety Commission",
+      "url": "https://www.cnsc-ccsn.gc.ca/eng/"
+    },
+    {
+      "title": "Impact Assessment Agency of Canada: New Nuclear at Wesleyville",
+      "url": "https://iaac-aeic.gc.ca/050/evaluations/proj/89802"
+    }
+  ]
+}

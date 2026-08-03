@@ -4,7 +4,7 @@ status: active
 category: "Wesleyville community benefit"
 tracked_since: "2026-07-24"
 first_published: "2026-07-18"
-last_verified: "2026-07-24"
+last_verified: "2026-08-03"
 source_urls:
   - "https://jordanformayor.ca/priorities/port-hope-energy-dividend"
   - "https://jordanformayor.ca/documents/port-hope-energy-dividend-campaign-plan.pdf"
@@ -14,7 +14,9 @@ source_urls:
 
 ## Current published commitment
 
-> I will make a direct resident Energy Dividend a formal negotiating objective of any final Host Municipal Agreement I support. I will fight to launch the first fully funded phase before the end of the 2026-2030 council term, while protecting infrastructure funding, municipal revenue and Port Hope taxpayers.
+> I support new nuclear development at Wesleyville. I will not support Port Hope signing a final Host Municipal Agreement unless it fully protects taxpayers and infrastructure, funds local readiness and includes a fully funded resident Energy Dividend consistent with the published staged plan.
+
+Support for the nuclear project is firm. Support for Port Hope's final Host Municipal Agreement depends on the agreement meeting Port Hope's terms. The Energy Dividend is a required component of the final municipal agreement Jordan will support.
 
 The published offer is a staged annual Energy Dividend paid directly to eligible Port Hope households and funded through a binding Host Municipal Agreement.
 
@@ -112,7 +114,7 @@ Administration, audit, appeals, payment processing and contingency would be fund
 
 ### Published context
 
-The Energy Dividend is a campaign negotiating objective. It is not a current project-owner offer, approved municipal program or existing resident entitlement.
+The Energy Dividend is a required campaign term of the final municipal agreement Jordan will support. The $500, $1,000 and $1,500 figures remain annual maximum campaign targets tied to project stages and secured funding; final amounts and administration remain subject to the binding agreement and independent modelling. It is not a current project-owner offer, approved municipal program or existing resident entitlement. The project is not yet approved, licensed, constructed or guaranteed.
 
 No payment begins until the relevant funding, administration and reserve requirements are met. If funding stops, the program freezes or winds down without a property-tax backstop.
 
