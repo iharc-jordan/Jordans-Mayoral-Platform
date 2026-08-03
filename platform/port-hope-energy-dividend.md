@@ -18,7 +18,7 @@ source_urls:
 
 Support for the nuclear project is firm. Support for Port Hope's final Host Municipal Agreement depends on the agreement meeting Port Hope's terms. The Energy Dividend is a required component of the final municipal agreement Jordan will support.
 
-The published offer is a staged annual Energy Dividend paid directly to eligible Port Hope households and funded through a binding Host Municipal Agreement.
+The published offer is a staged annual Energy Dividend paid directly to eligible Port Hope households and funded through a binding Host Municipal Agreement. The first stage begins immediately when the agreement is signed and the required first-year funding, administration costs and 24-month reserve are secured.
 
 The campaign's public principle is: **Port Hope hosts it. Port Hope shares in it.**
 
@@ -34,7 +34,7 @@ Each stage replaces the previous stage. The amounts do not stack.
 
 | Project stage | Annual household maximum | Quarterly maximum | Public trigger |
 |---|---:|---:|---|
-| Development | $500 | $125 | First fully funded phase targeted before the end of the 2026-2030 council term |
+| Development | $500 | $125 | Binding Host Municipal Agreement signed, with the first year of rebates, administration and 24-month reserve secured |
 | Major construction | $1,000 | $250 | Major construction begins and the larger reserve is secured |
 | Electricity generation | $1,500 | $375 | Generation begins and long-term host funding is secured |
 
@@ -104,12 +104,12 @@ Using the published 2021 count of 7,315 households, the campaign plan presents t
 
 Administration, audit, appeals, payment processing and contingency would be funded on top of the rebate reserve.
 
-### 2026-2030 roadmap
+### Delivery roadmap
 
 1. **First 100 days:** Set the Host Municipal Agreement negotiating mandate, commission independent legal and financial modelling, and publish the resident-benefit objective.
 2. **2027:** Develop the formula, eligibility baseline, direct-payment system, independent administration and project-funding security. Publish draft terms before a final vote.
 3. **2028-2029:** Establish the restricted fund, complete privacy and tax reviews, test the payment system and secure the first two years of rebates plus administration.
-4. **By the end of 2030:** Target launch of the fully funded development stage, paying up to $500 annually through quarterly direct rebates.
+4. **Host Municipal Agreement signing:** Launch the fully funded development stage immediately, paying up to $500 annually through quarterly direct rebates, once the first year of rebates, administration and the required 24-month reserve are secured.
 5. **As the project advances:** Increase to the $1,000 and $1,500 stages only when construction and generation milestones are reached and the required money is secured.
 
 ### Published context
