@@ -1,0 +1,38 @@
+{
+  "id": "2026-08-04-reframe-priority-6-safe-public-spaces-regional-solutions",
+  "date": "2026-08-04",
+  "title": "Reframe Priority 6 around safe public spaces and regional solutions",
+  "classification": "position-change",
+  "affectedRuleIds": [],
+  "affectedPolicyIds": [
+    "safe-public-spaces-and-strong-local-institutions"
+  ],
+  "affectedSurfaces": [],
+  "summary": "Jordan moved the safe-public-spaces priority from fourth to sixth in the campaign's priority order and reframed it from a policing-led commitment into a broader commitment to safe public spaces, early preparation and regional responsibility for homelessness and addictions. Wesleyville moves from fifth to fourth and A Diverse Local Economy moves from sixth to fifth. Support for keeping Port Hope Police local remains unchanged. A detailed implementation plan will be published later in the campaign with municipal actions, regional roles, funding, first-year steps and public measures.",
+  "reason": "Port Hope Police remains an important local institution, but preserving the service is not broad enough to stand as one of the campaign's defining priorities. Cobourg currently carries Northumberland County's only emergency shelter and hosted the County's 2025/2026 winter warming-room response, while County and Town records document significant service and public-space pressures. Port Hope is not facing the same concentration today, but it is not immune. The campaign's priority should therefore focus on preparing early and supporting a regional solution rather than treating municipal boundaries as a reason to leave Cobourg carrying the burden alone.",
+  "previousValues": {},
+  "newValues": {},
+  "whatDidNotChange": "Jordan remains committed to keeping Port Hope Police local, accountable and properly resourced; respecting the Chief's operational independence and the Police Services Board's civilian governance role; keeping public spaces safe, usable and accessible; focusing enforcement on unsafe conduct rather than status; connecting people to treatment, housing and follow-up; and publicly identifying responsibility and unresolved service gaps. The stable policy ID, source filename, public route and six-priority structure remain in place.",
+  "supportingLinks": [
+    {
+      "title": "Safe public spaces priority",
+      "url": "https://jordanformayor.ca/priorities/public-safety-community"
+    },
+    {
+      "title": "The Plan",
+      "url": "https://jordanformayor.ca/priorities"
+    },
+    {
+      "title": "Northumberland County operational changes to shelter services",
+      "url": "https://northumberland.ca/news/county-council-directs-operational-changes-to-shelter-services-in-response-to-community-feedback/"
+    },
+    {
+      "title": "Northumberland County winter warming room",
+      "url": "https://northumberland.ca/news/county-council-approves-plans-to-open-winter-warming-room-at-county-headquarters/"
+    },
+    {
+      "title": "Town of Cobourg public-space response",
+      "url": "https://www.cobourg.ca/news/posts/update-on-draft-parks-and-recreation-master-plan-engagement/"
+    }
+  ]
+}
